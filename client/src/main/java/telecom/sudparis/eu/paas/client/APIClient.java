@@ -21,7 +21,6 @@ import java.io.StringWriter;
 import java.net.URI;
 
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -43,7 +42,6 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 /**
  * Servlet implementation class APIClient
  */
-@WebServlet(description = "Tests the different operations offered by the REST API", urlPatterns = { "/APIClient" })
 public class APIClient extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static int paas;
