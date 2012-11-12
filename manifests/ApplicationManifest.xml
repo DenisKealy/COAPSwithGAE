@@ -1,0 +1,35 @@
+<!--
+Copyright 2012 	Yangui, Sellami, Mohamed, Tata 	Telecom SudParis
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<?xml version="1.0" encoding="UTF8"?>
+<paas_manifest name=manifestName" xmlns="http://www.compatibleone.fr/schemes/paasmanifest.xsd">
+	<paas_application name="applicationName" date_created="yyyy-mm-dd" description="applicationdescription">
+		<paas_version label="versionLabel" date_updated="yyyy-mm-dd" description="versionDescription">
+			<paas_version_instance name="xWikiInstanceName" uri="WikiInstanceNameURI" date_instantiated="yyyy-mm-dd" description="xWikiInstanceDescription" state="RUNNING|STOP" default_instance="true|false">
+				<paas_deployable name="paasDeployableName" content_type="paasDeployableType" location="paasDeployableDirectory" multitenancy_level="SharedInstance|DedicatedInstance"/>
+			</paas_version_instance>
+		</paas_version>
+		<paas_environment name="paasEnvName" date_created="yyyy-mm-dd" date_updated="yyyy-mm-dd" description="paasEnvDescription" provider="any">			
+			<paas_configuration_template name="paasConfigTempName" date_created="yyyy-mm-dd" date_updated="yyyy-mm-dd" description="paasConfigTempDescription">
+				<paas_node content_type="container|router|database" name="nodeName" version="nodeVersion" provider="any"/>
+				<paas_relation>
+				</paas_relation>	
+			</paas_configuration_template>
+		</paas_environment>
+	</paas_application>
+</paas_manifest>
+
+
+

@@ -1,0 +1,123 @@
+===================================
+          *-PaaS API
+===================================
+Authors: Mohamed Moahemd, Mohamed Sellami, Sami Yangui, Samir Tata
+Contributor: Telecom SudParis
+
+*******************
+A. Description
+*******************
+The CompatibleOne platform can interact with several PaaS providers (e.g. CloudFoundry, OpenShift, etc).
+In this aim, we are working on a generic REST API (*-PaaS API) that allows the CompatibleOne platform to seamlessly interact with different and heterogeneous 
+PaaS providers.
+
+The *-PaaS API exposes several interfaces that has be implemented according to the different actions that can exposes a PaaS provider to manage applications 
+and environments. These interfaces should implemented for each PaaS solution to connect to CompatibleOne platform.
+By doing so, we should have as many API implementations as PaaS providers used by CompatibleOne platform. 
+In this way, to add a new PaaS, one have only to develop its specific API implementation. 
+For instance, a CloudFoundry-PaaS API implementation will act as a middleware between CompatibleOne platform and CloudFoundry.
+
+************************
+B. Folder content
+************************
+1. spec
+-------
+This folder contains *-PaaS API specification (V1.3).
+
+2. manifests
+-------------
+This folder contains manifest models used by the API to describe:
+	* Environment,
+	* Application,
+	* ApplicationVersion,
+	* ApplicationVersionInstance.
+
+3. api
+-------
+This folder contains the java interfaces for the *-PaaS API. The current api ensures application and environment management operations.
+
+4. core
+--------
+This folder contains two subfolders: 
+	* 4.1 [CloudFoundry-api] : the CloudFoundry-PaaS API implementation.
+	* 4.2 [OpenShift-api] : the OpenShift-PaaS API implementation.
+
+Please use maven (maven build) to build these implementations. This will generate a Web application (i.e. war file) to be deployed on a Web server. 
+War files acts a REST server and allows to respectively interact with a CloudFoundry/an Open Shift PaaS instance. 
+To invoke API actions, one can use our Web-based client (see Section 5) or any REST client (eg. CURL).
+
+Requirements: 
+	* Web container : Apache Tomcat (V7)
+	* Runtime: Java 1.6
+
+Usage:
+	a. Deploy the generated WAR file (CF-api.war for the CloudFoundry implementation respectively OS-api.war for the openshift implementation) on tomcat,
+	b. Type http://localhost:8080/CF-api/ (respectively http://localhost:8080/OS-api/) in your browser to test. You should get a message indicating that 
+	your CloudFoundry (respectively Openshift) implementation is correctly running.
+	c. Configure your CloudFoundry (respectively Openshift) account by updating the parameters in credentials.properties.
+	( WEB-INF/classes/telecom/sudparis/eu/copaas/core/server/ressources/credentials.properties ).
+	e. Invoke an action (e.g create application):
+		- using CURL: 
+		   curl -X POST -d @{URL-of-XML-CloudAppDescriptor} -H "Content-Type: application/xml" http://{hostname}:{port}/CF-api/rest/app
+		- using our Web-based client: see Section 5.
+
+5. client
+----------
+This folder contains a Web-based client to execute the different implementations. 
+Use maven (maven build) to build the client and deploy it on tomcat.
+To run the client, type (http://localhost:8080/client/APIClient) on your browser.
+Then, you can select the PaaS instance to interact with(only CloudFoundry and Openshift are available) before following one of the test 
+scenarios detailed below.
+
+	5.1 CloudFoundry test scenario
+	------------------------------
+	To deploy an application on a running CloudFoundry instance, one should follow these steps:
+			- Acces the client interface at http://localhost:8080/client/APIClient
+			- Select the CloudFoundry PaaS solution.
+			- Create an environment: select the “create environment” action from the action list and provide the manifest fragment
+				describing the needed environment for the application to deploy (runtimes, frameworks, etc.). The returned “envid” must 
+				be provided later to map between this environment and the application to deploy (deployApplication action).
+			- Create the application: select the “create application” action from the action list and provide the manifest fragment
+				describing the application. In the same way as the created environment, an “appid” will be provided by the API.
+			- Create an application version: select the “create application version” action from the action list and provide the
+				application identifier “appid” and the manifest fragment describing the application version (artifacts, paths, etc.).
+				IMPORTANT: Here do not forget to specify the name and the path of the application to deploy
+			- Create an application version instance: select the “create application version instance” action from the action list,
+				provide the application identifier “appid” and the manifest fragment describing the application version instance.
+			- Deploy the application: select the “deploy application” action from the action list while specifying the environment
+				identifier “envid” and the application identifier “appid”.
+			- Start the application:  select the “start application” action from the action list and provide the application
+				identifier “appid”.
+			- The application is accessible via a browser on the returned URL.
+			
+	5.2 Openshift test scenario
+	----------------------------
+	To deploy an application on a running CloudFoundry instance, one should follow these steps:
+			- Acces the client interface at http://localhost:8080/client/APIClient
+			- Select the Openshift PaaS solution.
+			- Create an environment: select the “create environment” action from the action list and provide the manifest fragment
+				describing the needed environment to deploy the application (runtimes, frameworks, etc.). The returned “envname” must 
+				be provided later to map between this environment and the application to deploy (deployApplication action).
+			- Create the application: select the “create application” action from the action list and provide the manifest fragment
+				describing the application (application name, artifacts, instances number, environment name “envname”, etc.).
+			IMPORTANT: Here do not forget to specify the name and the path of the application to deploy
+			- Deploy the application: select the “deploy application” action from the action list while specifying the environment name
+				“envname” and the application identifier “appid”. An application "URL" and a "GitURL" will be returned by the API.
+			- The application is accessible via a browser on the returned URL. To update the application, one should update its
+				Git accessible on the returned “GitURL”.
+		
+6. test-resources
+-----------------
+
+This folder contains test materials: the manifests and a Web application that can be deployed on CF or OS.
+	6.1 sampleApplication
+	---------------------
+	This subfolder contains a test servlet application to deploy.
+	
+	6.2 CloudFoundry-test-manifests
+	-------------------------------
+	A set of manifests describing the applications to deploy on CloudFoundry and its environments.
+
+	6.3 OpenShift-test-manifests
+	-----------------------------
+	A set of manifests describing the applications to deploy on OpenShift and its environments.
