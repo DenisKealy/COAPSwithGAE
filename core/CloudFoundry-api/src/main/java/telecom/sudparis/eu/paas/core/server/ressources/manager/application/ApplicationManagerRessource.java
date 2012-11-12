@@ -300,12 +300,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				for (CloudApplication cfApp : appListCF) {
 					Application poolApp = findAssociatedAppInThePool(cfApp
 							.getName());
-					/*
-					 * if (poolApp == null) {// l'application présente dans CF
-					 * est // obsolete, la supprimer client.login();
-					 * client.deleteApplication(cfApp.getName());
-					 * client.logout(); } else {
-					 */// Update the status of the associated application in
+					/// Update the status of the associated application in
 					// the pool
 					if (poolApp != null) {
 						poolApp.setStatus(cfApp.getState().toString());
@@ -528,9 +523,10 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				client.logout();
 			}
 
-			if (appCF != null && app != null) {// récupérer les données (status,
+			if (appCF != null && app != null) {
+				// recuperer les donnees (status,
 				// staging,...) de la CFApplication
-				// et les insérer dans
+				// et les inserer dans
 				// lapoolApplication
 				app.setStatus(appCF.getState().toString());
 				app.setStaging(new StagingXML(appCF.getStaging()));

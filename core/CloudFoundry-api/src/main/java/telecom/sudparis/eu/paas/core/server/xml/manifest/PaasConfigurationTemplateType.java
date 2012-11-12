@@ -14,10 +14,10 @@
  * limitations under the License.
  ******************************************************************************/
 //
-// Ce fichier a été généré par l'implémentation de référence JavaTM Architecture for XML Binding (JAXB), v2.2.6 
+// Ce fichier a ete genere par l'implementation de reference JavaTM Architecture for XML Binding (JAXB), v2.2.6 
 // Voir <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
-// Toute modification apportée à ce fichier sera perdue lors de la recompilation du schéma source. 
-// Généré le : 2012.09.25 à 04:57:53 PM CEST 
+// Toute modification apportee à ce fichier sera perdue lors de la recompilation du schema source. 
+// Genere le : 2012.09.25 à 04:57:53 PM CEST 
 //
 
 
@@ -37,7 +37,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 /**
  * <p>Classe Java pour paas_configuration_templateType complex type.
  * 
- * <p>Le fragment de schéma suivant indique le contenu attendu figurant dans cette classe.
+ * <p>Le fragment de schema suivant indique le contenu attendu figurant dans cette classe.
  * 
  * <pre>
  * &lt;complexType name="paas_configuration_templateType">
@@ -88,7 +88,7 @@ public class PaasConfigurationTemplateType {
     protected String description;
 
     /**
-     * Obtient la valeur de la propriété paasConfigurationOption.
+     * Obtient la valeur de la propriete paasConfigurationOption.
      * 
      * @return
      *     possible object is
@@ -100,7 +100,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Définit la valeur de la propriété paasConfigurationOption.
+     * Definit la valeur de la propriete paasConfigurationOption.
      * 
      * @param value
      *     allowed object is
@@ -141,7 +141,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Obtient la valeur de la propriété paasRelation.
+     * Obtient la valeur de la propriete paasRelation.
      * 
      * @return
      *     possible object is
@@ -153,7 +153,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Définit la valeur de la propriété paasRelation.
+     * Definit la valeur de la propriete paasRelation.
      * 
      * @param value
      *     allowed object is
@@ -165,7 +165,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Obtient la valeur de la propriété name.
+     * Obtient la valeur de la propriete name.
      * 
      * @return
      *     possible object is
@@ -177,7 +177,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Définit la valeur de la propriété name.
+     * Definit la valeur de la propriete name.
      * 
      * @param value
      *     allowed object is
@@ -189,7 +189,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Obtient la valeur de la propriété uri.
+     * Obtient la valeur de la propriete uri.
      * 
      * @return
      *     possible object is
@@ -201,7 +201,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Définit la valeur de la propriété uri.
+     * Definit la valeur de la propriete uri.
      * 
      * @param value
      *     allowed object is
@@ -213,7 +213,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Obtient la valeur de la propriété dateCreated.
+     * Obtient la valeur de la propriete dateCreated.
      * 
      * @return
      *     possible object is
@@ -225,7 +225,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Définit la valeur de la propriété dateCreated.
+     * Definit la valeur de la propriete dateCreated.
      * 
      * @param value
      *     allowed object is
@@ -237,7 +237,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Obtient la valeur de la propriété dateUptaded.
+     * Obtient la valeur de la propriete dateUptaded.
      * 
      * @return
      *     possible object is
@@ -249,7 +249,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Définit la valeur de la propriété dateUptaded.
+     * Definit la valeur de la propriete dateUptaded.
      * 
      * @param value
      *     allowed object is
@@ -261,7 +261,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Obtient la valeur de la propriété description.
+     * Obtient la valeur de la propriete description.
      * 
      * @return
      *     possible object is
@@ -273,7 +273,7 @@ public class PaasConfigurationTemplateType {
     }
 
     /**
-     * Définit la valeur de la propriété description.
+     * Definit la valeur de la propriete description.
      * 
      * @param value
      *     allowed object is

@@ -14,10 +14,10 @@
  * limitations under the License.
  ******************************************************************************/
 //
-// Ce fichier a été généré par l'implémentation de référence JavaTM Architecture for XML Binding (JAXB), v2.2.6 
+// Ce fichier a ete genere par l'implementation de reference JavaTM Architecture for XML Binding (JAXB), v2.2.6 
 // Voir <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
-// Toute modification apportée à ce fichier sera perdue lors de la recompilation du schéma source. 
-// Généré le : 2012.09.25 à 04:57:53 PM CEST 
+// Toute modification apportee à ce fichier sera perdue lors de la recompilation du schema source. 
+// Genere le : 2012.09.25 à 04:57:53 PM CEST 
 //
 
 
@@ -34,7 +34,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 /**
  * <p>Classe Java pour paas_nodeType complex type.
  * 
- * <p>Le fragment de schéma suivant indique le contenu attendu figurant dans cette classe.
+ * <p>Le fragment de schema suivant indique le contenu attendu figurant dans cette classe.
  * 
  * <pre>
  * &lt;complexType name="paas_nodeType">
@@ -66,7 +66,7 @@ public class PaasNodeType {
     protected String provider;
 
     /**
-     * Obtient la valeur de la propriété contentType.
+     * Obtient la valeur de la propriete contentType.
      * 
      * @return
      *     possible object is
@@ -78,7 +78,7 @@ public class PaasNodeType {
     }
 
     /**
-     * Définit la valeur de la propriété contentType.
+     * Definit la valeur de la propriete contentType.
      * 
      * @param value
      *     allowed object is
@@ -90,7 +90,7 @@ public class PaasNodeType {
     }
 
     /**
-     * Obtient la valeur de la propriété name.
+     * Obtient la valeur de la propriete name.
      * 
      * @return
      *     possible object is
@@ -102,7 +102,7 @@ public class PaasNodeType {
     }
 
     /**
-     * Définit la valeur de la propriété name.
+     * Definit la valeur de la propriete name.
      * 
      * @param value
      *     allowed object is
@@ -114,7 +114,7 @@ public class PaasNodeType {
     }
 
     /**
-     * Obtient la valeur de la propriété version.
+     * Obtient la valeur de la propriete version.
      * 
      * @return
      *     possible object is
@@ -126,7 +126,7 @@ public class PaasNodeType {
     }
 
     /**
-     * Définit la valeur de la propriété version.
+     * Definit la valeur de la propriete version.
      * 
      * @param value
      *     allowed object is
@@ -138,7 +138,7 @@ public class PaasNodeType {
     }
 
     /**
-     * Obtient la valeur de la propriété provider.
+     * Obtient la valeur de la propriete provider.
      * 
      * @return
      *     possible object is
@@ -150,7 +150,7 @@ public class PaasNodeType {
     }
 
     /**
-     * Définit la valeur de la propriété provider.
+     * Definit la valeur de la propriete provider.
      * 
      * @param value
      *     allowed object is

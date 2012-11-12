@@ -14,10 +14,10 @@
  * limitations under the License.
  ******************************************************************************/
 //
-// Ce fichier a été généré par l'implémentation de référence JavaTM Architecture for XML Binding (JAXB), v2.2.6 
+// Ce fichier a ete genere par l'implementation de reference JavaTM Architecture for XML Binding (JAXB), v2.2.6 
 // Voir <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
-// Toute modification apportée à ce fichier sera perdue lors de la recompilation du schéma source. 
-// Généré le : 2012.09.25 à 04:57:53 PM CEST 
+// Toute modification apportee à ce fichier sera perdue lors de la recompilation du schema source. 
+// Genere le : 2012.09.25 à 04:57:53 PM CEST 
 //
 
 
@@ -38,7 +38,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 /**
  * <p>Classe Java pour paas_versionType complex type.
  * 
- * <p>Le fragment de schéma suivant indique le contenu attendu figurant dans cette classe.
+ * <p>Le fragment de schema suivant indique le contenu attendu figurant dans cette classe.
  * 
  * <pre>
  * &lt;complexType name="paas_versionType">
@@ -78,7 +78,7 @@ public class PaasVersionType {
     protected String description;
 
     /**
-     * Obtient la valeur de la propriété paasDeployable.
+     * Obtient la valeur de la propriete paasDeployable.
      * 
      * @return
      *     possible object is
@@ -90,7 +90,7 @@ public class PaasVersionType {
     }
 
     /**
-     * Définit la valeur de la propriété paasDeployable.
+     * Definit la valeur de la propriete paasDeployable.
      * 
      * @param value
      *     allowed object is
@@ -102,7 +102,7 @@ public class PaasVersionType {
     }
 
     /**
-     * Obtient la valeur de la propriété paasVersionInstance.
+     * Obtient la valeur de la propriete paasVersionInstance.
      * 
      * @return
      *     possible object is
@@ -114,7 +114,7 @@ public class PaasVersionType {
     }
 
     /**
-     * Définit la valeur de la propriété paasVersionInstance.
+     * Definit la valeur de la propriete paasVersionInstance.
      * 
      * @param value
      *     allowed object is
@@ -126,7 +126,7 @@ public class PaasVersionType {
     }
 
     /**
-     * Obtient la valeur de la propriété label.
+     * Obtient la valeur de la propriete label.
      * 
      * @return
      *     possible object is
@@ -138,7 +138,7 @@ public class PaasVersionType {
     }
 
     /**
-     * Définit la valeur de la propriété label.
+     * Definit la valeur de la propriete label.
      * 
      * @param value
      *     allowed object is
@@ -150,7 +150,7 @@ public class PaasVersionType {
     }
 
     /**
-     * Obtient la valeur de la propriété dateUptaded.
+     * Obtient la valeur de la propriete dateUptaded.
      * 
      * @return
      *     possible object is
@@ -162,7 +162,7 @@ public class PaasVersionType {
     }
 
     /**
-     * Définit la valeur de la propriété dateUptaded.
+     * Definit la valeur de la propriete dateUptaded.
      * 
      * @param value
      *     allowed object is
@@ -174,7 +174,7 @@ public class PaasVersionType {
     }
 
     /**
-     * Obtient la valeur de la propriété description.
+     * Obtient la valeur de la propriete description.
      * 
      * @return
      *     possible object is
@@ -186,7 +186,7 @@ public class PaasVersionType {
     }
 
     /**
-     * Définit la valeur de la propriété description.
+     * Definit la valeur de la propriete description.
      * 
      * @param value
      *     allowed object is

@@ -68,13 +68,13 @@ public class APIClient extends HttpServlet {
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws ServletException, IOException {
 
-		// récupérer la nom de la méthode
+		// Get the method name
 		String method = request.getParameter("method");
-		// récupérer le path de la méthode
+		// Get the method path
 		String path = request.getParameter("path");
-		// récupérer le body de la requête
+		// Get the request body
 		String body = request.getParameter("body");
-		// récupérer le nom du paas (si 0 CloudFoundry, si 1 Openshift, si -1 non spécifié)
+		// Get the PaaS name (0 CloudFoundry, 1 Openshift, -1 not specfied)
 		paas = Integer.parseInt(request.getParameter("paas"));
 
 		if (method == null || method.equals("") || path == null
@@ -98,9 +98,7 @@ public class APIClient extends HttpServlet {
 			client.setConnectTimeout(0);
 			WebResource service = client.resource(getBaseURI());
 
-			// ServletOutputStream out=response.getOutputStream();
-
-			// récupérer le type de la méthode (i.e. GET, POST,...)
+			// Get the type of the methods (i.e. GET, POST,...)
 			String[] methodSplit = method.split("-");
 			method = methodSplit[0];
 

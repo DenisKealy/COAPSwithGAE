@@ -14,10 +14,10 @@
  * limitations under the License.
  ******************************************************************************/
 //
-// Ce fichier a été généré par l'implémentation de référence JavaTM Architecture for XML Binding (JAXB), v2.2.6 
+// Ce fichier a ete genere par l'implementation de reference JavaTM Architecture for XML Binding (JAXB), v2.2.6 
 // Voir <a href="http://java.sun.com/xml/jaxb">http://java.sun.com/xml/jaxb</a> 
-// Toute modification apportée à ce fichier sera perdue lors de la recompilation du schéma source. 
-// Généré le : 2012.09.25 à 04:57:53 PM CEST 
+// Toute modification apportee à ce fichier sera perdue lors de la recompilation du schema source. 
+// Genere le : 2012.09.25 à 04:57:53 PM CEST 
 //
 
 
@@ -32,7 +32,7 @@ import javax.xml.bind.annotation.XmlType;
 /**
  * <p>Classe Java pour paas_configuration_optionType complex type.
  * 
- * <p>Le fragment de schéma suivant indique le contenu attendu figurant dans cette classe.
+ * <p>Le fragment de schema suivant indique le contenu attendu figurant dans cette classe.
  * 
  * <pre>
  * &lt;complexType name="paas_configuration_optionType">
@@ -87,7 +87,7 @@ public class PaasConfigurationOptionType {
     protected String value;
 
     /**
-     * Obtient la valeur de la propriété changeSeverity.
+     * Obtient la valeur de la propriete changeSeverity.
      * 
      * @return
      *     possible object is
@@ -99,7 +99,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété changeSeverity.
+     * Definit la valeur de la propriete changeSeverity.
      * 
      * @param value
      *     allowed object is
@@ -111,7 +111,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété defaultValue.
+     * Obtient la valeur de la propriete defaultValue.
      * 
      * @return
      *     possible object is
@@ -123,7 +123,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété defaultValue.
+     * Definit la valeur de la propriete defaultValue.
      * 
      * @param value
      *     allowed object is
@@ -135,7 +135,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété maxLength.
+     * Obtient la valeur de la propriete maxLength.
      * 
      * @return
      *     possible object is
@@ -147,7 +147,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété maxLength.
+     * Definit la valeur de la propriete maxLength.
      * 
      * @param value
      *     allowed object is
@@ -159,7 +159,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété maxValue.
+     * Obtient la valeur de la propriete maxValue.
      * 
      * @return
      *     possible object is
@@ -171,7 +171,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété maxValue.
+     * Definit la valeur de la propriete maxValue.
      * 
      * @param value
      *     allowed object is
@@ -183,7 +183,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété minValue.
+     * Obtient la valeur de la propriete minValue.
      * 
      * @return
      *     possible object is
@@ -195,7 +195,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété minValue.
+     * Definit la valeur de la propriete minValue.
      * 
      * @param value
      *     allowed object is
@@ -207,7 +207,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété regex.
+     * Obtient la valeur de la propriete regex.
      * 
      * @return
      *     possible object is
@@ -219,7 +219,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété regex.
+     * Definit la valeur de la propriete regex.
      * 
      * @param value
      *     allowed object is
@@ -231,7 +231,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété userDefined.
+     * Obtient la valeur de la propriete userDefined.
      * 
      * @return
      *     possible object is
@@ -243,7 +243,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété userDefined.
+     * Definit la valeur de la propriete userDefined.
      * 
      * @param value
      *     allowed object is
@@ -255,7 +255,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété valueOptions.
+     * Obtient la valeur de la propriete valueOptions.
      * 
      * @return
      *     possible object is
@@ -267,7 +267,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété valueOptions.
+     * Definit la valeur de la propriete valueOptions.
      * 
      * @param value
      *     allowed object is
@@ -279,7 +279,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété valueType.
+     * Obtient la valeur de la propriete valueType.
      * 
      * @return
      *     possible object is
@@ -291,7 +291,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété valueType.
+     * Definit la valeur de la propriete valueType.
      * 
      * @param value
      *     allowed object is
@@ -303,7 +303,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété namespace.
+     * Obtient la valeur de la propriete namespace.
      * 
      * @return
      *     possible object is
@@ -315,7 +315,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété namespace.
+     * Definit la valeur de la propriete namespace.
      * 
      * @param value
      *     allowed object is
@@ -327,7 +327,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété optionName.
+     * Obtient la valeur de la propriete optionName.
      * 
      * @return
      *     possible object is
@@ -339,7 +339,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété optionName.
+     * Definit la valeur de la propriete optionName.
      * 
      * @param value
      *     allowed object is
@@ -351,7 +351,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Obtient la valeur de la propriété value.
+     * Obtient la valeur de la propriete value.
      * 
      * @return
      *     possible object is
@@ -363,7 +363,7 @@ public class PaasConfigurationOptionType {
     }
 
     /**
-     * Définit la valeur de la propriété value.
+     * Definit la valeur de la propriete value.
      * 
      * @param value
      *     allowed object is
