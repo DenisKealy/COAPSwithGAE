@@ -13,9 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-/**
- * 
- */
 package telecom.sudparis.eu.paas.core.server.ressources.manager.application;
 
 import java.io.ByteArrayInputStream;
@@ -376,7 +373,6 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 					if(listOfInstances!=null && listOfInstances.size()>0)
 						for (PaasVersionInstanceType p:listOfInstances){
 							if(p!=null){
-								//Ajout à la liste des Noms
 								VersionInstance vi = new VersionInstance();
 								vi.setInstanceName(p.getName());
 								listVI.add(vi);
