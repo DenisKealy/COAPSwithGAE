@@ -20,9 +20,9 @@
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
 			<artifactId>cloudfoundry-client-lib</artifactId>
-			<version>0.8.2</version>
+			<version>0.8.2.BUILD-SNAPSHOT</version>
 		</dependency>
-		<dependency>
+    <dependency>
 			<groupId>com.sun.jersey</groupId>
 			<artifactId>jersey-client</artifactId>
 			<version>1.14</version>
@@ -32,7 +32,7 @@
   		  <artifactId>star-PaaS-API</artifactId>
   		  <version>0.0.1-SNAPSHOT</version>
 		</dependency>
-	</dependencies>
+  </dependencies>
 	<build>
 		<finalName>CF-api</finalName>
 		<resources>
