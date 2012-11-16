@@ -11,6 +11,14 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>Cloud Foundry REST API</name>
+	
+	<repositories>		
+		<repository>
+            <id>spring-libs-milestone</id>
+            <url>http://repo.springsource.org/libs-milestone</url>
+        </repository>
+	</repositories>
+	
 	<dependencies>
 		<dependency>
 			<groupId>com.sun.jersey</groupId>
@@ -20,7 +28,7 @@
 		<dependency>
 			<groupId>org.cloudfoundry</groupId>
 			<artifactId>cloudfoundry-client-lib</artifactId>
-			<version>0.8.2.BUILD-SNAPSHOT</version>
+			<version>0.8.2</version>
 		</dependency>
     <dependency>
 			<groupId>com.sun.jersey</groupId>

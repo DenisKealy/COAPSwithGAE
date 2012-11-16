@@ -430,7 +430,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	private void createMySqlService(String serviceName,
 			CloudFoundryClient client) {
 		CloudService service = new CloudService(
-				CloudEntity.Meta.defaultV1Meta(), serviceName);
+				CloudEntity.Meta.defaultMeta(), serviceName);
 
 		service.setType("database");
 		service.setVersion("5.1");
@@ -444,7 +444,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	private void createRedisService(String serviceName,
 			CloudFoundryClient client) {
 		CloudService service = new CloudService(
-				CloudEntity.Meta.defaultV1Meta(), serviceName);
+				CloudEntity.Meta.defaultMeta(), serviceName);
 
 		service.setType("key-value");
 		service.setVersion("2.2");

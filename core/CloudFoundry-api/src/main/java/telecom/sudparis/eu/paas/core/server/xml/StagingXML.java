@@ -31,6 +31,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlValue;
 
+import org.cloudfoundry.client.lib.domain.Staging;
+
 
 /**
  * @author sellami
@@ -51,6 +53,13 @@ public class StagingXML {
     public StagingXML(Map<String, String> map) {
 		this.map = new HashMap<String, String>();
 		this.map.putAll(map);
+	}
+    
+    public StagingXML(Staging s) {
+		this.map = new HashMap<String, String>();
+		this.map.put("runtime", s.getRuntime());
+		this.map.put("framework", s.getFramework());
+		this.map.put("command", s.getCommand());
 	}
 
     @XmlElement(name = "ressource")
