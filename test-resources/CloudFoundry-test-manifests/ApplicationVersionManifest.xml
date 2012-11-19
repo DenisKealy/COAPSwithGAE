@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <?xml version="1.0" encoding="UTF8"?>
-<paas_manifest name="DisplayDBApplicationManifest" xmlns="">
+<paas_manifest name="ServletSampleApplicationManifest" xmlns="">
 <paas_description></paas_description>
 	<paas_application>
 		<paas_version label="1.0" date_uptaded="2012-10-10" description="Version1.0">

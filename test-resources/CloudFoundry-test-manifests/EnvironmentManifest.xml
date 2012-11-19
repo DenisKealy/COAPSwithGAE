@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 -->
 <?xml version="1.0" encoding="UTF8"?>
-<paas_manifest name="ChatClientApplicationManifest" xmlns="">
+<paas_manifest name="ServletSampleApplicationManifest" xmlns="">
 <paas_description></paas_description>
 	<paas_application>
 		<paas_environment name="JavaWebEnv" date_created="2012-10-10" date_uptaded="2012-10-10" description="JavaWebApplicationsEnv" config_template="TomcatEnvTemp" provider="CF"/>			
