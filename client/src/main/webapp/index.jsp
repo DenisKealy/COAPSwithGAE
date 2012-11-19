@@ -79,7 +79,7 @@ $(function() {
  <body bgcolor="#3E7087">
 
 <div style="text-align: center;"> </div>
- <div align="center"><h2><font color="white">*-PaaS  REST API</font></h2><h4><font color="white">(<i>The Cloud Foundry implementation</i>)</font> </h4> </div>
+ <div align="center"><h2><font color="white">*-PaaS  REST API</font></h2><h4><font color="white">(<i>The Cloud Foundry & Openshift implementations</i>)</font> </h4> </div>
 <form method="post" action="/client/APIClient" style="height: 959px; ">
  <div align="center">
 	<table border="0" bordercolor="white" bgcolor="#1F4661" width="60%" cellpadding="3" cellspacing="3" style="height: 948px; ">
@@ -88,7 +88,7 @@ $(function() {
 	<select name="paas" id="paas" style="width: 589px; ">
 	<option id="ns" value="-1">  </option>	
 	<option id="cf" value="0"> Cloud Foundry </option>
-	<option id="os" value="1"> Open Shift </option>
+	<option id="os" value="1"> Openshift </option>
 	</select>
 	</td>
 	</tr>
