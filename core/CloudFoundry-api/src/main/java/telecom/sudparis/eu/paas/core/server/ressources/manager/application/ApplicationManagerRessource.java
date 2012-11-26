@@ -27,7 +27,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.GenericEntity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -41,6 +45,7 @@ import org.cloudfoundry.client.lib.CloudCredentials;
 import org.cloudfoundry.client.lib.CloudFoundryClient;
 import org.cloudfoundry.client.lib.domain.CloudApplication;
 import org.cloudfoundry.client.lib.domain.CloudApplication.AppState;
+import org.springframework.web.client.HttpServerErrorException;
 
 
 import telecom.sudparis.eu.paas.api.ressources.manager.application.RestApplicationManager;
@@ -99,7 +104,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	/**
 	 * checks the existence of the application By default set to true
 	 */
-	private final boolean CHECK_EXISTS = true;
+	private static final boolean CHECK_EXISTS = true;
 
 	/**
 	 * The Application pool
@@ -479,8 +484,14 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				client.login();
 				Application app = appPool.INSTANCE.getApp(appid);
 				String appName = app.getAppName();
+				try{
 				if (client.getApplication(appName).getState() == AppState.STOPPED)
 					client.startApplication(appName);
+				}catch(HttpServerErrorException e){
+					// this error is to avoid timeout exceptions that occurs during the upload of large applications
+					//TODO add a method to see the status of the upload
+					System.out.println("(Start Application):Entering HttpServerErrorException....");
+				}
 				client.logout();
 			}
 			return describeApplication(appid);
@@ -623,7 +634,8 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 			} else {
 				client.login();
 				client.deleteAllApplications();
-				appPool.INSTANCE.removeAll();
+				//appPool.INSTANCE.removeAll();
+				ApplicationPool.INSTANCE.removeAll();
 				client.logout();
 			}
 
@@ -701,6 +713,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
 		}
 	}
+
 
 	// private methods
 
@@ -784,7 +797,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				client.logout();
 			}
 
-			List<Application> appListPool = appPool.INSTANCE.getAppList();
+			//List<Application> appListPool = appPool.INSTANCE.getAppList();
 			for (CloudApplication ca : appListCF) {
 				String id = Long.toString(getNextId());
 				Application app = new Application();
@@ -803,7 +816,8 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				linksList = addDescribeAppLink(linksList, id);
 				linksList = addDeleteAppLink(linksList, id);
 				app.setLinksList(linksList);
-				appPool.INSTANCE.add(app);
+				ApplicationPool.INSTANCE.add(app);
+				//appPool.INSTANCE.add(app);
 			}
 		}
 	}

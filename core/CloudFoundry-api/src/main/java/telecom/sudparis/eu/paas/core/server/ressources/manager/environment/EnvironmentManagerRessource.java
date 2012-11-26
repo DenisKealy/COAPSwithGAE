@@ -46,6 +46,7 @@ import org.cloudfoundry.client.lib.domain.CloudApplication;
 import org.cloudfoundry.client.lib.domain.CloudEntity;
 import org.cloudfoundry.client.lib.domain.CloudService;
 import org.cloudfoundry.client.lib.domain.Staging;
+import org.springframework.web.client.HttpServerErrorException;
 
 
 import telecom.sudparis.eu.paas.api.ressources.manager.environment.RestEnvironmentManager;
@@ -323,6 +324,10 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 				client.createApplication(app.getAppName(), staging,
 						(int) app.getMemory(), app.getUris(),
 						env.getServiceNames(), app.isCheckExists());
+				
+				//Sets the number of instances
+				if(app.getNbInstances()>0)
+					client.updateApplicationInstances(app.getAppName(), app.getNbInstances());
 
 				// Services binding
 				if (servicesLst != null && servicesLst.size() != 0)
@@ -346,23 +351,30 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 					ZipFile zipFile = new ZipFile(artefactFile);
 					ApplicationArchive appArchive = new ZipApplicationArchive(
 							zipFile);
+					try{
 					client.uploadApplication(app.getAppName(), appArchive);
+					}catch(HttpServerErrorException e){
+						// this is to avoid timeout exceptions that occurs during 
+						//the upload of large applications
+						//TODO add a method to see the status of the upload
+						System.out.println("[DeployApplication]: Entering HttpServerErrorException....");
+					}
 				}else if (app.getDeployable().getDeployableType().equals("folder")){
 					String folderPath = app.getDeployable()
 							.getDeployableDirectory().replace("\\", "/");
 					File folderFile = new File(folderPath);
 					ApplicationArchive archive = new DirectoryApplicationArchive(folderFile);				
 					//client.uploadApplication(app.getAppName(), archive);
+					try{
 					client.uploadApplication(app.getAppName(), app.getDeployable()
 							.getDeployableDirectory().replace("\\", "/"));
-
+					}catch(HttpServerErrorException e){
+						// this is to avoid timeout exceptions that occurs during the 
+						// upload of large applications
+						//TODO add a method to see the status of the upload
+						System.out.println("[DeployApplication]: Entering HttpServerErrorException....");
+					}	
 				}
-				
-				//Sets the number of instances
-				if(app.getNbInstances()>0)
-					client.updateApplicationInstances(app.getAppName(), app.getNbInstances());
-				
-
 				client.logout();
 			}
 			// update the Application with describeApp and deleteApp links
