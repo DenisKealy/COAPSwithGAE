@@ -1,6 +1,6 @@
-============
-'*'-PaaS API
-============
+==============================================
+COAPS: COmpatible Application Platform Service 
+==============================================
 Authors: Mohamed Moahemd, Mohamed Sellami, Sami Yangui, Samir Tata
 
 Contributor: Telecom SudParis
@@ -9,9 +9,11 @@ Contributor: Telecom SudParis
 A. Description
 ****************
 
-The CompatibleOne platform can interact with several PaaS providers (e.g. CloudFoundry, OpenShift, etc). In this aim, we are working on a generic REST API ('*'-PaaS API) that allows the CompatibleOne platform to seamlessly interact with different and heterogeneous PaaS providers.
+COmpatible Application Platform Service (COAPS)
+-------------------------------------------------------------------------
+The CompatibleOne platform can interact with several PaaS providers (e.g. CloudFoundry, OpenShift, etc). In this aim, we provide COAPS, a generic REST API, that allows the CompatibleOne platform to seamlessly interact with different and heterogeneous PaaS providers.
 
-The '*'-PaaS API exposes several interfaces that has be implemented according to the different actions that can exposes a PaaS provider to manage applications and environments. These interfaces should implemented for each PaaS solution to connect to CompatibleOne platform. By doing so, we should have as many API implementations as PaaS providers used by CompatibleOne platform. In this way, to add a new PaaS, one have only to develop its specific API implementation. For instance, a CloudFoundry-PaaS API implementation will act as a middleware between CompatibleOne platform and CloudFoundry.
+COAPS exposes several interfaces that has be implemented according to the different actions that can exposes a PaaS provider to manage applications and environments. These interfaces should implemented for each PaaS solution to connect to CompatibleOne platform. By doing so, we should have as many COAPS implementations as PaaS providers used by CompatibleOne platform. In this way, to add a new PaaS, one have only to develop its specific API implementation. For instance, a COAPS-CloudFoundry implementation will act as a middleware between CompatibleOne platform and CloudFoundry.
 
 *********
 B. Build
@@ -19,13 +21,13 @@ B. Build
 
 Requirements: Maven Maven 3.0.4
 
-1. Create a clone of the dev-paas-api folder
+1. Create a clone of the coaps folder
 2. In the root directory run mvn install
 
 This action will package the different sub-modules:
 
-- api: the jar file of the generic '*'-PaaS api
-- core: two war files associated to the cloudFoundry and the Openshift implementations of the '*'-PaaS api
+- api: the jar file of the generic COAPS API
+- core: two war files associated to the cloudFoundry and the Openshift implementations of COAPS
 - client: a war file containing a Web client
 
 *****************
@@ -34,11 +36,11 @@ C. Folder content
 
 1. spec
 -------
-This folder contains '*'-PaaS API specification (V1.3).
+This folder contains the COAPS specification (V1.3).
 
 2. manifests
 -------------
-This folder contains manifest models used by the API to describe:
+This folder contains manifest models used by COAPS to describe:
 
 - Environnement,
 - Application,
@@ -47,15 +49,15 @@ This folder contains manifest models used by the API to describe:
 
 3. api
 -------
-This folder contains the java interfaces for the '*'-PaaS API. The current api ensures application and environment management operations.
+This folder contains the java interfaces of COAPS. The current version ensures application and environment management operations.
 
 4. core
 --------
 
 This folder contains two subfolders: 
 
-- [CloudFoundry-api] : the CloudFoundry-PaaS API implementation.
-- [OpenShift-api] : the OpenShift-PaaS API implementation.
+- [CloudFoundry-api] : the COAPS-CloudFoundry implementation.
+- [OpenShift-api] : the COAPS-OpenShift implementation.
 
 After the maven build (section B), a Web application (i.e. war file) is generated in each sub-folder. These applications have to be deployed on a Web server and will acts a REST server which allows interacting with a CloudFoundry/an Open Shift PaaS instance.
  

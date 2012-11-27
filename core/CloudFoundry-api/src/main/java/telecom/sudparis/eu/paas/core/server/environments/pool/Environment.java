@@ -24,9 +24,6 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import telecom.sudparis.eu.paas.core.server.xml.ApplicationVersionInstanceXML;
-import telecom.sudparis.eu.paas.core.server.xml.TopologyXML;
-
 /**
  * An Environment
  * 
@@ -35,7 +32,7 @@ import telecom.sudparis.eu.paas.core.server.xml.TopologyXML;
 
 /**
  * @author sellami
- *
+ * 
  */
 @XmlRootElement(name = "environment")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -69,13 +66,13 @@ public class Environment {
 	 */
 	@XmlElement
 	private List<String> serviceNames;
-	
+
 	/**
 	 * List of the provided Links for the Application
 	 */
 	@XmlElement
 	private Map<String, String> linksList;
-	
+
 	public String getEnvId() {
 		return envId;
 	}
@@ -123,5 +120,5 @@ public class Environment {
 	public void setLinksList(Map<String, String> linksList) {
 		this.linksList = linksList;
 	}
-	
+
 }
