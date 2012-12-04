@@ -43,11 +43,17 @@ import org.cloudfoundry.client.lib.archive.ApplicationArchive;
 import org.cloudfoundry.client.lib.archive.DirectoryApplicationArchive;
 import org.cloudfoundry.client.lib.archive.ZipApplicationArchive;
 import org.cloudfoundry.client.lib.domain.CloudApplication;
+import org.cloudfoundry.client.lib.domain.CloudDomain;
 import org.cloudfoundry.client.lib.domain.CloudEntity;
+import org.cloudfoundry.client.lib.domain.CloudInfo;
+import org.cloudfoundry.client.lib.domain.CloudInfo.Runtime;
+import org.cloudfoundry.client.lib.domain.CloudResource;
+import org.cloudfoundry.client.lib.domain.CloudResources;
 import org.cloudfoundry.client.lib.domain.CloudService;
 import org.cloudfoundry.client.lib.domain.Staging;
+import org.cloudfoundry.client.lib.util.CloudUtil;
+import org.omg.SendingContext.RunTime;
 import org.springframework.web.client.HttpServerErrorException;
-
 
 import telecom.sudparis.eu.paas.api.ressources.manager.environment.RestEnvironmentManager;
 import telecom.sudparis.eu.paas.core.server.applications.pool.Application;
@@ -68,26 +74,27 @@ import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasNodeType;
  */
 @Path("environment")
 public class EnvironmentManagerRessource implements RestEnvironmentManager {
-	
+
 	/**
 	 * ressource bundle to get the connexion credentials
 	 */
-	private static ResourceBundle rb = ResourceBundle.getBundle("telecom.sudparis.eu.paas.core.server.ressources.credentials");
-	
+	private static ResourceBundle rb = ResourceBundle
+			.getBundle("telecom.sudparis.eu.paas.core.server.ressources.credentials");
+
 	/**
 	 * The target cloud Foundry URL
 	 */
-	private static final String ccUrl=rb.getString("vcap.target");
-	
+	private static final String ccUrl = rb.getString("vcap.target");
+
 	/**
-	 * The CloudFoundry user mail 
+	 * The CloudFoundry user mail
 	 */
-	private static final String TEST_USER_EMAIL =rb.getString("vcap.email");
-	
+	private static final String TEST_USER_EMAIL = rb.getString("vcap.email");
+
 	/**
 	 * The CloudFoundry user password
 	 */
-	private static final String TEST_USER_PASS =rb.getString("vcap.passwd");
+	private static final String TEST_USER_PASS = rb.getString("vcap.passwd");
 
 	/**
 	 * The Environment pool
@@ -108,6 +115,19 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	 * An element to display Errors
 	 */
 	private Error error = new Error();
+
+	/**
+	 * The Frameworks supported in the current implementation
+	 */
+	public static final String JAVA_WEB = "java_web";
+	public static final String SPRING_WEB = "spring_web/1.0";
+	public static final String NODE = "node";
+
+	/**
+	 * The Runtimes supported in the current implementation
+	 */
+	public static final String JAVA6 = "java";
+	public static final String JAVA7 = "java7";
 
 	@Override
 	public Response createEnvironment(String environmentTemplateDescriptor) {
@@ -147,7 +167,9 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 				// framework "java_web" to the container tomcat
 				// TODO consider the case of several containers
 				List<String> containerNames = new ArrayList<String>();
-				containerNames.add("tomcat");// we consider only one container
+				List<String> containerVersions = new ArrayList<String>();
+				// containerNames.add("tomcat");// we consider only one
+				// container
 				List<String> serviceNames = new ArrayList<String>();
 				List<PaasNodeType> lstNodes = manifest.getPaasApplication()
 						.getPaasConfigurationTemplate().getPaasNode();
@@ -155,34 +177,39 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 				for (PaasNodeType node : lstNodes) {
 					// If no container was specified in the Environment
 					// Descriptor, Tomcat will be choosen
-					if (node.getContentType().equals("container"))
+					if (node.getContentType().equals("container")) {
 						containerNames.add(node.getName());
-					else if (node.getContentType().equals("database"))
+						containerVersions.add(node.getVersion());
+					} else if (node.getContentType().equals("database"))
 						serviceNames.add(node.getName());
 				}
 
 				Map<String, String> staging = new HashMap<String, String>();
 
+				// TODO this value may be useful when handling several
+				// containers
+				int containerIndex = 0;
 				for (String cName : containerNames) {
 					if (cName.equals("tomcat")) {
-						staging.put("runtime", "java");
-						staging.put("framework",  CloudApplication.JAVA_WEB);
+						if (containerVersions.get(containerIndex).startsWith(
+								"6")) {
+							staging.put("runtime", JAVA6);
+						} else if (containerVersions.get(containerIndex)
+								.startsWith("7")) {
+							staging.put("runtime", JAVA7);
+						}
+						staging.put("framework", JAVA_WEB);
 						staging.put("command", "no");
-					}else if (cName.equals("spring")) {
-						staging.put("runtime", "java");
-						staging.put("framework",  CloudApplication.SPRING);
+					} else if (cName.equals("spring")) {
+						staging.put("runtime", JAVA6);
+						staging.put("framework", SPRING_WEB);
 						staging.put("command", "no");
-					}else if (cName.equals("node.js")) {
-						staging.put("runtime", "node");
-						staging.put("framework",  "node");
+					} else if (cName.equals("node.js")) {
+						staging.put("runtime", NODE);
+						staging.put("framework", NODE);
 						staging.put("command", "no");
 					}
-					else {
-						// TODO consider the other containers
-						staging.put("runtime", "java");
-						staging.put("framework", "java_web");
-						staging.put("command", "no");
-					}
+					containerIndex++;
 				}
 
 				// generate envID
@@ -209,7 +236,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 
 			} else {
 				System.out
-						.println("Failed to retrieve the cloud Environment Descriptor");
+				.println("Failed to retrieve the cloud Environment Descriptor");
 				error.setValue("Failed to retrieve the cloud Environment Descriptor.");
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 						.entity(error).build();
@@ -299,14 +326,13 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 			} else {
 				client.login();
 				String runtime = env.getStaging().get("runtime");
+				System.out.println("env.getStaging().get(runtime) = "
+						+ env.getStaging().get("runtime"));
 				String framework = env.getStaging().get("framework");
 				Staging staging = new Staging(runtime, framework);
 
 				List<CloudService> servicesLst = client.getServices();
 
-				for (CloudService cs : servicesLst) {
-					System.out.println(cs.getName());
-				}
 				// Services Creation if not already exits
 				// TODO create the other supported services
 				if (servicesList != null && servicesList.size() != 0) {
@@ -324,10 +350,11 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 				client.createApplication(app.getAppName(), staging,
 						(int) app.getMemory(), app.getUris(),
 						env.getServiceNames(), app.isCheckExists());
-				
-				//Sets the number of instances
-				if(app.getNbInstances()>0)
-					client.updateApplicationInstances(app.getAppName(), app.getNbInstances());
+
+				// Sets the number of instances
+				if (app.getNbInstances() > 0)
+					client.updateApplicationInstances(app.getAppName(),
+							app.getNbInstances());
 
 				// Services binding
 				if (servicesLst != null && servicesLst.size() != 0)
@@ -338,7 +365,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 					}
 
 				// TODO upload Application we treated only the case of an
-				// aretfact
+				// artifact
 				if (app.getDeployable().getDeployableType().equals("artifact")) {
 					String artefactFileName = app.getDeployable()
 							.getDeployableName();
@@ -351,29 +378,36 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 					ZipFile zipFile = new ZipFile(artefactFile);
 					ApplicationArchive appArchive = new ZipApplicationArchive(
 							zipFile);
-					try{
-					client.uploadApplication(app.getAppName(), appArchive);
-					}catch(HttpServerErrorException e){
-						// this is to avoid timeout exceptions that occurs during 
-						//the upload of large applications
-						//TODO add a method to see the status of the upload
-						System.out.println("[DeployApplication]: Entering HttpServerErrorException....");
+					try {
+						client.uploadApplication(app.getAppName(), appArchive);
+					} catch (HttpServerErrorException e) {
+						// this is to avoid timeout exceptions that occurs
+						// during
+						// the upload of large applications
+						// TODO add a method to see the status of the upload
+						System.out
+						.println("[DeployApplication]: Entering HttpServerErrorException....");
 					}
-				}else if (app.getDeployable().getDeployableType().equals("folder")){
+				} else if (app.getDeployable().getDeployableType()
+						.equals("folder")) {
 					String folderPath = app.getDeployable()
 							.getDeployableDirectory().replace("\\", "/");
 					File folderFile = new File(folderPath);
-					ApplicationArchive archive = new DirectoryApplicationArchive(folderFile);				
-					//client.uploadApplication(app.getAppName(), archive);
-					try{
-					client.uploadApplication(app.getAppName(), app.getDeployable()
-							.getDeployableDirectory().replace("\\", "/"));
-					}catch(HttpServerErrorException e){
-						// this is to avoid timeout exceptions that occurs during the 
+					ApplicationArchive archive = new DirectoryApplicationArchive(
+							folderFile);
+					// client.uploadApplication(app.getAppName(), archive);
+					try {
+						client.uploadApplication(app.getAppName(), app
+								.getDeployable().getDeployableDirectory()
+								.replace("\\", "/"));
+					} catch (HttpServerErrorException e) {
+						// this is to avoid timeout exceptions that occurs
+						// during the
 						// upload of large applications
-						//TODO add a method to see the status of the upload
-						System.out.println("[DeployApplication]: Entering HttpServerErrorException....");
-					}	
+						// TODO add a method to see the status of the upload
+						System.out
+						.println("[DeployApplication]: Entering HttpServerErrorException....");
+					}
 				}
 				client.logout();
 			}
@@ -441,8 +475,8 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 
 	private void createMySqlService(String serviceName,
 			CloudFoundryClient client) {
-		CloudService service = new CloudService(
-				CloudEntity.Meta.defaultMeta(), serviceName);
+		CloudService service = new CloudService(CloudEntity.Meta.defaultMeta(),
+				serviceName);
 
 		service.setType("database");
 		service.setVersion("5.1");
@@ -455,8 +489,8 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 
 	private void createRedisService(String serviceName,
 			CloudFoundryClient client) {
-		CloudService service = new CloudService(
-				CloudEntity.Meta.defaultMeta(), serviceName);
+		CloudService service = new CloudService(CloudEntity.Meta.defaultMeta(),
+				serviceName);
 
 		service.setType("key-value");
 		service.setVersion("2.2");

@@ -52,8 +52,7 @@ public class PaasNodeType {
     @XmlAttribute(name = "name")
     protected String name;
     @XmlAttribute(name = "version")
-    @XmlSchemaType(name = "dateTime")
-    protected XMLGregorianCalendar version;
+    protected String version;
     @XmlAttribute(name = "provider")
     protected String provider;
 
@@ -113,7 +112,7 @@ public class PaasNodeType {
      *     {@link XMLGregorianCalendar }
      *     
      */
-    public XMLGregorianCalendar getVersion() {
+    public String getVersion() {
         return version;
     }
 
@@ -125,7 +124,7 @@ public class PaasNodeType {
      *     {@link XMLGregorianCalendar }
      *     
      */
-    public void setVersion(XMLGregorianCalendar value) {
+    public void setVersion(String value) {
         this.version = value;
     }
 
