@@ -28,7 +28,6 @@ import javax.ws.rs.core.Response;
 @Path("environment")
 public interface RestEnvironmentManager {
 
-	// Environment management REST Operations
 	/**
 	 * Creates a new environment <br>
 	 * Command: POST /environment/
@@ -43,6 +42,22 @@ public interface RestEnvironmentManager {
 	@Produces(MediaType.APPLICATION_XML)
 	Response createEnvironment(String environmentTemplateDescriptor);
 
+	
+	/**
+	 * Updates an existing environment <br>
+	 * Command: POST /environment/
+	 * 
+	 * @param environmentTemplateDescriptor
+	 *            An environment template descriptor must be provided.
+	 * @return An enriched environment template descriptor. The envID and Link
+	 *         element will be added to the descriptor
+	 */
+	@POST
+	@Path("{envId}")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
+	Response updateEnvironment(@PathParam("envId") String envid,String environmentTemplateDescriptor);
+	
 	/**
 	 * Deletes an environment <br>
 	 * Command: DELETE /environment/{envId}
@@ -52,7 +67,7 @@ public interface RestEnvironmentManager {
 	 */
 	@DELETE
 	@Path("{envId}")
-	public abstract Response deleteEnvironment(@PathParam("envId") String envid);
+	Response deleteEnvironment(@PathParam("envId") String envid);
 
 	/**
 	 * Finds the list of the available environments <br>
@@ -62,73 +77,7 @@ public interface RestEnvironmentManager {
 	 */
 	@GET
 	@Produces(MediaType.APPLICATION_XML)
-	public abstract Response findEnvironments();
-
-	/**
-	 * Starts an environment <br>
-	 * Command: POST /environment/{envId}/action/start
-	 * 
-	 * @param envid
-	 *            The environment's ID.
-	 */
-	@POST
-	@Path("{envId}/action/start")
-	public abstract Response startEnvironment(@PathParam("envId") String envid);
-
-	/**
-	 * Stops an environment <br>
-	 * Command: POST /environment/{envId}/action/stop
-	 * 
-	 * @param envid
-	 *            The environment's ID.
-	 */
-	@POST
-	@Path("{envId}/action/stop")
-	public abstract Response stopEnvironment(@PathParam("envId") String envid);
-
-	/**
-	 * Deploys an application instance on an available environment <br>
-	 * Command: POST
-	 * /environment/{envId}/action/deploy/app/{appId}/version/{versionId
-	 * }/instance/{instanceId}
-	 * 
-	 * @param envid
-	 *            The environment's ID.
-	 * @param appid
-	 *            The application's ID.
-	 * @param versionid
-	 *            The application's version ID.
-	 * @param instanceid
-	 *            The application's instance ID.
-	 */
-	@POST
-	@Path("{envId}/action/deploy/app/{appId}/version/{versionId}/instance/{instanceId}")
-	public abstract Response deployApplication(
-			@PathParam("envId") String envid, @PathParam("appId") String appid,
-			@PathParam("versionId") String versionid,
-			@PathParam("instanceId") String instanceid);
-
-	/**
-	 * Undeploys an application instance on an available environment <br>
-	 * Command: DELETE
-	 * /environment/{envId}/action/undeploy/app/{appId}/version/{
-	 * versionId}/instance/{instanceId}
-	 * 
-	 * @param envid
-	 *            The environment's ID.
-	 * @param appid
-	 *            The application's ID.
-	 * @param versionid
-	 *            The application's version ID.
-	 * @param instanceid
-	 *            The application's instance ID.
-	 */
-	@POST
-	@Path("{envId}/action/undeploy/app/{appId}/version/{versionId}/instance/{instanceId}")
-	public abstract Response undeployApplication(
-			@PathParam("envId") String envid, @PathParam("appId") String appid,
-			@PathParam("versionId") String versionid,
-			@PathParam("instanceId") String instanceid);
+	Response findEnvironments();
 
 	/**
 	 * Get the description of an environment <br>
@@ -140,7 +89,7 @@ public interface RestEnvironmentManager {
 	 */
 	@GET
 	@Path("{envId}")
-	public abstract Response getEnvironment(@PathParam("envId") String envid);
+	Response getEnvironment(@PathParam("envId") String envid);
 
 	/**
 	 * List the deployed application instances in an environment <br>
@@ -152,7 +101,17 @@ public interface RestEnvironmentManager {
 	 */
 	@GET
 	@Path("{envId}/app/")
-	public abstract Response getDeployedApplicationVersionInstance(
+	Response getDeployedApplications(
 			@PathParam("envId") String envid);
+	
+	/**
+	 * lists the runtimes, frameworks and services supported by the targeted PaaS <br>
+	 * Command: GET /environment/info/
+	 * 
+	 * @return a list of runtimes, frameworks and services supported by the targeted PaaS
+	 */
+	@GET
+	@Path("info/")
+	Response getInformations();
 
 }

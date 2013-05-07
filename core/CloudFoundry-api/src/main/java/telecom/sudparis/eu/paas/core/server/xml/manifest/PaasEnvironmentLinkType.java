@@ -11,24 +11,20 @@ package telecom.sudparis.eu.paas.core.server.xml.manifest;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for paas_environmentType complex type.
+ * <p>Java class for paas_environment_linkType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="paas_environmentType">
+ * &lt;complexType name="paas_environment_linkType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
- *       &lt;sequence>
- *         &lt;element name="paas_environment_template" type="{}paas_environment_templateType"/>
- *       &lt;/sequence>
  *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="template" type="{http://www.w3.org/2001/XMLSchema}string" />
+ *       &lt;attribute name="script" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -37,41 +33,13 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "paas_environmentType", propOrder = {
-    "paasEnvironmentTemplate"
-})
-public class PaasEnvironmentType {
+@XmlType(name = "paas_environment_linkType")
+public class PaasEnvironmentLinkType {
 
-    @XmlElement(name = "paas_environment_template", required = true)
-    protected PaasEnvironmentTemplateType paasEnvironmentTemplate;
     @XmlAttribute
     protected String name;
     @XmlAttribute
-    protected String template;
-
-    /**
-     * Gets the value of the paasEnvironmentTemplate property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link PaasEnvironmentTemplateType }
-     *     
-     */
-    public PaasEnvironmentTemplateType getPaasEnvironmentTemplate() {
-        return paasEnvironmentTemplate;
-    }
-
-    /**
-     * Sets the value of the paasEnvironmentTemplate property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link PaasEnvironmentTemplateType }
-     *     
-     */
-    public void setPaasEnvironmentTemplate(PaasEnvironmentTemplateType value) {
-        this.paasEnvironmentTemplate = value;
-    }
+    protected String script;
 
     /**
      * Gets the value of the name property.
@@ -98,27 +66,27 @@ public class PaasEnvironmentType {
     }
 
     /**
-     * Gets the value of the template property.
+     * Gets the value of the script property.
      * 
      * @return
      *     possible object is
      *     {@link String }
      *     
      */
-    public String getTemplate() {
-        return template;
+    public String getScript() {
+        return script;
     }
 
     /**
-     * Sets the value of the template property.
+     * Sets the value of the script property.
      * 
      * @param value
      *     allowed object is
      *     {@link String }
      *     
      */
-    public void setTemplate(String value) {
-        this.template = value;
+    public void setScript(String value) {
+        this.script = value;
     }
 
 }

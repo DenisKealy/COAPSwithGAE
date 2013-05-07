@@ -4,10 +4,13 @@
 package telecom.sudparis.eu.paas.core.server.ressources.manager.application;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
+import java.io.OutputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.ws.rs.Path;
@@ -20,21 +23,29 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.storage.file.FileRepository;
+
 import telecom.sudparis.eu.paas.api.ressources.manager.application.RestApplicationManager;
 import telecom.sudparis.eu.paas.core.server.applications.pool.ApplicationPool;
 import telecom.sudparis.eu.paas.core.server.environments.pool.EnvironmentPool;
 import telecom.sudparis.eu.paas.core.server.ressources.exception.NotSupportedException;
 import telecom.sudparis.eu.paas.core.server.xml.ApplicationXML;
+import telecom.sudparis.eu.paas.core.server.xml.ApplicationXML.LinksList;
+import telecom.sudparis.eu.paas.core.server.xml.ApplicationXML.LinksList.Link;
 import telecom.sudparis.eu.paas.core.server.xml.DeployableXML;
 import telecom.sudparis.eu.paas.core.server.xml.EnvironmentXML;
 import telecom.sudparis.eu.paas.core.server.xml.Error;
 import telecom.sudparis.eu.paas.core.server.xml.OperationResponse;
-import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasManifestType;
+import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationManifestType;
 
+import com.jcraft.jsch.JSch;
 import com.openshift.client.IApplication;
 import com.openshift.client.ICartridge;
 import com.openshift.client.IDomain;
 import com.openshift.client.IEmbeddableCartridge;
+import com.openshift.client.IGearProfile;
 import com.openshift.client.IOpenShiftConnection;
 import com.openshift.client.IUser;
 import com.openshift.client.OpenShiftConnectionFactory;
@@ -60,6 +71,11 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	private static final String ccUrl = rb.getString("vcap.target");
 
 	/**
+	 * The public OS-PaaS API URL
+	 */
+	private static String apiUrl = rb.getString("api.public.url");
+
+	/**
 	 * The OpenShift user mail
 	 */
 	private static final String TEST_USER_EMAIL = rb.getString("vcap.email");
@@ -78,16 +94,8 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	 * An element to display Errors
 	 */
 	private Error error = new Error();
-
-	/**
-	 * The Application pool
-	 */
-	private ApplicationPool appPool;
-
-	/**
-	 * The Environment pool
-	 */
-	private EnvironmentPool envPool;
+	
+	private static String localTempPath = System.getProperty("java.io.tmpdir");
 
 	private static boolean checkOSApplications = false;
 
@@ -95,11 +103,12 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	public Response createApplication(String cloudApplicationDescriptor) {
 
 		IOpenShiftConnection iOpenShiftConnection = new OpenShiftConnectionFactory()
-		.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
-				TEST_USER_PASS, ccUrl);
+				.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
+						TEST_USER_PASS, ccUrl);
 
 		IUser user = iOpenShiftConnection.getUser();
 		IDomain domain = user.getDefaultDomain();
+		
 
 		try {
 			copyDeployedApps2Pool();
@@ -108,16 +117,16 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				InputStream is = new ByteArrayInputStream(
 						cloudApplicationDescriptor.getBytes());
 				JAXBContext jaxbContext;
-				PaasManifestType manifest = new PaasManifestType();
+				PaasApplicationManifestType manifest = new PaasApplicationManifestType();
 				try {
 					jaxbContext = JAXBContext
 							.newInstance("telecom.sudparis.eu.paas.core.server.xml.manifest");
 					Unmarshaller jaxbUnmarshaller = jaxbContext
 							.createUnmarshaller();
 
-					JAXBElement<PaasManifestType> root = jaxbUnmarshaller
+					JAXBElement<PaasApplicationManifestType> root = jaxbUnmarshaller
 							.unmarshal(new StreamSource(is),
-									PaasManifestType.class);
+									PaasApplicationManifestType.class);
 					manifest = root.getValue();
 
 				} catch (JAXBException e) {
@@ -127,18 +136,15 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				String appName = manifest.getPaasApplication().getName();
 				String envName = manifest.getPaasApplication()
 						.getEnvironement();
-				String deployableName = manifest.getPaasApplication()
-						.getPaasVersion().getPaasDeployable().getName();
-				String deployableType = manifest.getPaasApplication()
-						.getPaasVersion().getPaasDeployable().getContentType();
-				String deployableDirectory = manifest.getPaasApplication()
-						.getPaasVersion().getPaasDeployable().getLocation();
+				String deployableName = manifest.getPaasApplication().getPaasApplicationVersion().getPaasApplicationDeployable().getName();
+				String deployableType = manifest.getPaasApplication().getPaasApplicationVersion().getPaasApplicationDeployable().getContentType();
+				String deployableDirectory = manifest.getPaasApplication().getPaasApplicationVersion().getPaasApplicationDeployable().getLocation();
 
 				ICartridge ic = null;
 				// TODO voir le cas specific jenkins
 
 				// Gets the environment with the name specified in the Manifest
-				EnvironmentXML env = envPool.INSTANCE.getEnvByName(envName);
+				EnvironmentXML env = EnvironmentPool.INSTANCE.getEnvByName(envName);
 
 				if (env == null) {
 					System.out.println("No Environment with name " + envName
@@ -153,7 +159,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 						envName = containerNames.get(0);
 					else {
 						System.out
-						.println("Wrong number of environments found!");
+								.println("Wrong number of environments found!");
 						error.setValue("Wrong number of environments found! Check the Environment Manifest.");
 						return Response
 								.status(Response.Status.PRECONDITION_FAILED)
@@ -176,10 +182,12 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 						ic = ICartridge.RUBY_18;
 					else if (envName.toLowerCase().contains("wsgi"))
 						ic = ICartridge.WSGI_32;
+					else if(envName.toLowerCase().contains("tomcat"))// TODO see if tomcat is supported
+						ic = ICartridge.JBOSSAS_7;
 
 					IApplication createdApp = domain.createApplication(appName,
 							ic);
-
+					
 					// Add the additional Cartridges
 					List<String> cartridgeNames = env.getCartridgeNames();
 					if (cartridgeNames != null && cartridgeNames.size() > 0) {
@@ -204,7 +212,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 
 							if (embeddableCartridge != null)
 								createdApp
-								.addEmbeddableCartridge(embeddableCartridge);
+										.addEmbeddableCartridge(embeddableCartridge);
 							createdApp.getGitUrl();
 						}
 					}
@@ -230,14 +238,14 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 					// Update the corespending Application with the
 					// AdequateLinkList
 					// in the AppPool
-					Map<String, String> linksList = new HashMap<String, String>();
+					LinksList linksList = new LinksList();
 					linksList = addFindAppVersionsLink(linksList,
 							Long.toString(id));
 					linksList = addDescribeAppLink(linksList, Long.toString(id));
 					linksList = addDeleteAppLink(linksList, Long.toString(id));
 					app.setLinksList(linksList);
 
-					appPool.INSTANCE.add(app);
+					ApplicationPool.INSTANCE.add(app);
 
 					return Response.status(Response.Status.OK)
 							.entity(new GenericEntity<ApplicationXML>(app) {
@@ -246,7 +254,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 
 			} else {
 				System.out
-				.println("Failed to retrieve the cloud Application Descriptor");
+						.println("Failed to retrieve the cloud Application Descriptor");
 				error.setValue("Failed to retrieve the cloud Application Descriptor.");
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 						.entity(error).build();
@@ -254,6 +262,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		} catch (Exception e) {
 			System.out.println("Failed to create the application: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to create the application: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -262,22 +271,16 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	}
 
 	@Override
-	public Response createApplicationVersion(String appId,
-			String applicationVersionDescriptor) {
-		throw new NotSupportedException();
-	}
-
-	@Override
 	public Response findApplications() {
 		try {
 			copyDeployedApps2Pool();
-			List<ApplicationXML> appListPool = appPool.INSTANCE.getAppList();
+			List<ApplicationXML> appListPool = ApplicationPool.INSTANCE.getAppList();
 
 			if (appListPool != null && appListPool.size() > 0)
 				return Response
 						.status(Response.Status.OK)
 						.entity(new GenericEntity<List<ApplicationXML>>(
-								appPool.INSTANCE.getAppList()) {
+								ApplicationPool.INSTANCE.getAppList()) {
 						}).type(MediaType.APPLICATION_XML_TYPE).build();
 			else {
 				or.setValue("No application available.");
@@ -287,7 +290,6 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		} catch (Exception e) {
 			System.out.println("Failed to display the applications: "
 					+ e.getMessage());
-			System.out.println(e.getStackTrace());
 			e.printStackTrace();
 			error.setValue("Failed to display the applications: "
 					+ e.getMessage());
@@ -297,23 +299,10 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	}
 
 	@Override
-	public Response findApplicationVersionInstances(String appid,
-			String versionid) {
-		throw new NotSupportedException();
-	}
-
-	@Override
-	public Response createApplicationVersionInstance(String appId,
-			String applicationVersionInstanceDescriptor) {
-		throw new NotSupportedException();
-	}
-
-	@Override
-	public Response startApplicationVersionInstance(String appid,
-			String versionid, String instanceid) {
+	public Response startApplication(String appid) {
 		try {
 			copyDeployedApps2Pool();
-			ApplicationXML app = appPool.INSTANCE.getApp(appid);
+			ApplicationXML app = ApplicationPool.INSTANCE.getApp(appid);
 
 			if (app == null) {
 				or.setValue("Application not available.");
@@ -321,8 +310,8 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 						.type(MediaType.APPLICATION_XML_TYPE).build();
 			} else {
 				IOpenShiftConnection iOpenShiftConnection = new OpenShiftConnectionFactory()
-				.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
-						TEST_USER_PASS, ccUrl);
+						.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
+								TEST_USER_PASS, ccUrl);
 				IUser user = iOpenShiftConnection.getUser();
 				IDomain domain = user.getDefaultDomain();
 
@@ -332,6 +321,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		} catch (Exception e) {
 			System.out.println("Failed to satrt the application: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to start the application: " + e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
@@ -342,7 +332,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	public Response describeApplication(String appid) {
 		try {
 			copyDeployedApps2Pool();
-			ApplicationXML app = appPool.INSTANCE.getApp(appid);
+			ApplicationXML app = ApplicationPool.INSTANCE.getApp(appid);
 
 			if (app == null) {
 				or.setValue("Application not available.");
@@ -356,6 +346,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		} catch (Exception e) {
 			System.out.println("Failed to retrieve the application: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to retrieve the application: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -367,7 +358,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	public Response deleteApplication(String appid) {
 		try {
 			copyDeployedApps2Pool();
-			ApplicationXML app = appPool.INSTANCE.getApp(appid);
+			ApplicationXML app = ApplicationPool.INSTANCE.getApp(appid);
 
 			if (app == null) {
 				or.setValue("Application not available.");
@@ -375,13 +366,13 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 						.type(MediaType.APPLICATION_XML_TYPE).build();
 			} else {
 				IOpenShiftConnection iOpenShiftConnection = new OpenShiftConnectionFactory()
-				.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
-						TEST_USER_PASS, ccUrl);
+						.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
+								TEST_USER_PASS, ccUrl);
 				IUser user = iOpenShiftConnection.getUser();
 				IDomain domain = user.getDefaultDomain();
 
 				domain.getApplicationByName(app.getAppName()).destroy();
-				appPool.INSTANCE.remove(app);
+				ApplicationPool.INSTANCE.remove(app);
 				or.setValue("The application with ID " + appid
 						+ " was succefully deleted");
 				return Response.status(Response.Status.OK).entity(or)
@@ -390,6 +381,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		} catch (Exception e) {
 			System.out.println("Failed to delete the application: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to delete the application: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -401,26 +393,27 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	public Response deleteApplications() {
 		try {
 			copyDeployedApps2Pool();
-			List<ApplicationXML> listapp = appPool.INSTANCE.getAppList();
+			List<ApplicationXML> listapp = ApplicationPool.INSTANCE.getAppList();
 
 			if (listapp != null) {
 				IOpenShiftConnection iOpenShiftConnection = new OpenShiftConnectionFactory()
-				.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
-						TEST_USER_PASS, ccUrl);
+						.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
+								TEST_USER_PASS, ccUrl);
 				IUser user = iOpenShiftConnection.getUser();
 				IDomain domain = user.getDefaultDomain();
 
 				for (ApplicationXML a : listapp)
 					domain.getApplicationByName(a.getAppName()).destroy();
 			}
-			appPool.INSTANCE.removeAll();
-						or.setValue("All applications were succefully deleted");
-						return Response.status(Response.Status.OK).entity(or)
-								.type(MediaType.APPLICATION_XML_TYPE).build();
+			ApplicationPool.INSTANCE.removeAll();
+			or.setValue("All applications were succefully deleted");
+			return Response.status(Response.Status.OK).entity(or)
+					.type(MediaType.APPLICATION_XML_TYPE).build();
 
 		} catch (Exception e) {
 			System.out.println("Failed to delete all the applications: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to delete all the applications: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -429,11 +422,10 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	}
 
 	@Override
-	public Response stopApplicationVersionInstance(String appid,
-			String versionid, String instanceid) {
+	public Response stopApplication(String appid) {
 		try {
 			copyDeployedApps2Pool();
-			ApplicationXML app = appPool.INSTANCE.getApp(appid);
+			ApplicationXML app = ApplicationPool.INSTANCE.getApp(appid);
 
 			if (app == null) {
 				or.setValue("Application not available.");
@@ -441,8 +433,8 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 						.type(MediaType.APPLICATION_XML_TYPE).build();
 			} else {
 				IOpenShiftConnection iOpenShiftConnection = new OpenShiftConnectionFactory()
-				.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
-						TEST_USER_PASS, ccUrl);
+						.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
+								TEST_USER_PASS, ccUrl);
 				IUser user = iOpenShiftConnection.getUser();
 				IDomain domain = user.getDefaultDomain();
 
@@ -452,6 +444,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		} catch (Exception e) {
 			System.out.println("Failed to stop the application: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to stop the application: " + e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
@@ -459,39 +452,281 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	}
 
 	@Override
-	public Response findApplicationVersions(String appid) {
-		throw new NotSupportedException();
+	public Response updateApplication(String appid,
+			String cloudApplicationDescriptor) {
+		throw new NotSupportedException(
+				"The updateApplication is not yet implemented.");
+	}
+
+	@Override
+	public Response restartApplication(String appid) {
+		try {
+			copyDeployedApps2Pool();
+			ApplicationXML app = ApplicationPool.INSTANCE.getApp(appid);
+
+			if (app == null) {
+				or.setValue("Application not available.");
+				return Response.status(Response.Status.OK).entity(or)
+						.type(MediaType.APPLICATION_XML_TYPE).build();
+			} else {
+				IOpenShiftConnection iOpenShiftConnection = new OpenShiftConnectionFactory()
+						.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
+								TEST_USER_PASS, ccUrl);
+				IUser user = iOpenShiftConnection.getUser();
+				IDomain domain = user.getDefaultDomain();
+
+				domain.getApplicationByName(app.getAppName()).restart();
+				return describeApplication(appid);
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to stop the application: "
+					+ e.getMessage());
+			e.printStackTrace();
+			error.setValue("Failed to stop the application: " + e.getMessage());
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
+		}
+	}
+
+	@Override
+	public Response deployApplication(String envid, String appid,InputStream uploadedInputStream) {
+		//TODO: consider the upload
+		File theDir = null;
+		String localPath = null;
+		try {
+			ApplicationXML app = ApplicationPool.INSTANCE.getApp(appid);
+			EnvironmentXML env = EnvironmentPool.INSTANCE.getEnv(envid);
+
+			// We only consider the case of an artifact applications
+			if (!app.getDeployable().getDeployableType().equals("artifact")) {
+				System.out.println("Cannot handle this type of application: "
+						+ app.getDeployable().getDeployableType());
+				error.setValue("Cannot handle this type of application: "
+						+ app.getDeployable().getDeployableType());
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+						.entity(error).type(MediaType.APPLICATION_XML_TYPE)
+						.build();
+
+			} else {
+				
+				//We start by uploading the application files
+				String uploadedFileLocation = localTempPath + "/"+app.getDeployable().getDeployableName();
+
+				writeToFile(uploadedInputStream, uploadedFileLocation);
+				
+				//redefine the deployable element according to the uploaded file location
+				DeployableXML newDep=new DeployableXML();
+				newDep.setDeployableDirectory(localTempPath);
+				newDep.setDeployableName(app.getDeployable().getDeployableName());
+				newDep.setDeployableType(app.getDeployable().getDeployableType());
+				
+				//update the application pool with the uploaded file location
+				ApplicationPool.INSTANCE.updateApp(appid, newDep);	
+				
+				//retrieve the gitURL from the created application
+				String gitURL = app.getGitUrl();
+				localPath = localTempPath
+						+ "/PaaS-API-tmp-" + app.getAppUUID() + "/"
+						+ app.getAppName() + "/";
+
+				JSch.setConfig("StrictHostKeyChecking", "no");
+
+				// create Local repository
+				Repository localrepo = new FileRepository(localPath + ".git");
+
+				// Create the git
+				Git git = new Git(localrepo);
+
+				// Clone the Openshift repo
+
+				Git.cloneRepository().setURI(gitURL)
+						.setDirectory(new File(localPath)).call();
+
+				// If this is the default Git repository generated by Openshift,
+				// delete the default app
+				// git rm -r src/ pom.xml
+				git.rm().addFilepattern("-r src/ pom.xml").call();
+
+				// Add the application archive
+
+				// Specify the copy destination in the Git repository
+				// This depends on the type of the used environment
+
+				// TODO consider the other types!!
+				String copydestination = "deployments/";
+				if (env.getContainerNames().get(0).toLowerCase()
+						.contains("jboss"))
+					copydestination = "deployments/";
+
+				String deployableDirectory = app.getDeployable()
+						.getDeployableDirectory();
+				String deployableName = app.getDeployable().getDeployableName();
+				copy(deployableDirectory + "/" + deployableName, localPath
+						+ copydestination + deployableName);
+
+				git.add().addFilepattern(".").call();
+
+				// Commit changes
+				git.commit().setMessage("Changed by the OS-PaaS API").call();
+
+				// Push
+				git.push().call();
+
+				// removes the directory before exiting
+				theDir = new File(localPath);
+				System.out.println("Removing Existing directory: " + localPath);
+				removeDirectory(theDir);
+				//delete the temp uploaded deployable
+				deletefile(uploadedFileLocation);
+
+				return Response.status(Response.Status.OK).entity(app)
+						.type(MediaType.APPLICATION_XML_TYPE).build();
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to deploy the application: "
+					+ e.getMessage());
+			e.printStackTrace();
+			if (e.getMessage().contains(
+					"already exists and is not an empty directory"))
+				error.setValue("Failed to deploy the application: "
+						+ e.getMessage() + "\n Delete the" + localPath
+						+ "folder");
+			else
+				error.setValue("Failed to deploy the application: "
+						+ e.getMessage());
+			if (theDir != null && theDir.exists())
+				removeDirectory(theDir);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
+		}
+
+	}
+
+	@Override
+	public Response undeployApplication(String envid, String appid) {
+		File theDir = null;
+		String localPath = null;
+		try {
+			ApplicationXML app = ApplicationPool.INSTANCE.getApp(appid);
+			EnvironmentXML env = EnvironmentPool.INSTANCE.getEnv(envid);
+
+			// We only consider the case of an artifact applications
+			if (!app.getDeployable().getDeployableType().equals("artifact")) {
+				System.out.println("Cannot handle this type of application: "
+						+ app.getDeployable().getDeployableType());
+				error.setValue("Cannot handle this type of application: "
+						+ app.getDeployable().getDeployableType());
+				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+						.entity(error).type(MediaType.APPLICATION_XML_TYPE)
+						.build();
+
+			} else {
+				String gitURL = app.getGitUrl();
+				// String localPath = System.getProperty("user.home")
+				// + "/PaaS-API-tmp/" + app.getAppName() + "/";
+
+				localPath = "C:/Users/sellami" + "/PaaS-API-tmp-"
+						+ app.getAppUUID() + "/" + app.getAppName() + "/";
+				JSch.setConfig("StrictHostKeyChecking", "no");
+
+				// create Local repository
+				Repository localrepo = new FileRepository(localPath + ".git");
+
+				// Create the git
+				Git git = new Git(localrepo);
+
+				// Clone the Openshift repo
+				Git.cloneRepository().setURI(gitURL)
+						.setDirectory(new File(localPath)).call();
+
+				// If this is the default Git repository generated by Openshift,
+				// delete the default app
+				// git rm -r src/ pom.xml
+				String copydestination = "deployments/";
+				if (env.getContainerNames().get(0).toLowerCase()
+						.contains("jboss"))
+					copydestination = "deployments/";
+
+				git.rm()
+						.addFilepattern(
+								"-r src/ " + copydestination + " pom.xml")
+						.call();
+
+				git.add().addFilepattern(".").call();
+
+				// Commit changes
+				git.commit()
+						.setMessage("Application undeployed by the OS-PaaS API")
+						.call();
+
+				// Push
+				git.push().call();
+
+				// removes the directory before exiting
+				theDir = new File(localPath);
+				System.out.println("Removing Existing directory: " + localPath);
+				removeDirectory(theDir);
+
+				return Response.status(Response.Status.OK).entity(app)
+						.type(MediaType.APPLICATION_XML_TYPE).build();
+			}
+		} catch (Exception e) {
+			System.out.println("Failed to deploy the application: "
+					+ e.getMessage());
+			e.printStackTrace();
+			if (e.getMessage().contains(
+					"already exists and is not an empty directory"))
+				error.setValue("Failed to deploy the application: "
+						+ e.getMessage() + "\n Delete the" + localPath
+						+ "folder");
+			else
+				error.setValue("Failed to deploy the application: "
+						+ e.getMessage());
+			if (theDir != null && theDir.exists())
+				removeDirectory(theDir);
+			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
+		}
 	}
 
 	// private methods
 
 	private synchronized Long getNextId() {
-		return new Long(appPool.INSTANCE.getNextID());
+		return new Long(ApplicationPool.INSTANCE.getNextID());
 	}
 
 	//
-	private Map<String, String> addFindAppVersionsLink(
-			Map<String, String> linksList, String appId) {
-		String url = "http://localhost:8080/OpenShift-API/rest/app/" + appId
-				+ "/version";
-		linksList.put("[GET]findApplicationVersions(appid)", url);
+	private LinksList addFindAppVersionsLink(LinksList linksList, String appId) {
+
+		String url = formatApiURL(apiUrl) + "app/" + appId + "/version";
+		Link findAppVersionsLink = new Link();
+		findAppVersionsLink.setAction("GET");
+		findAppVersionsLink.setLabel("findApplicationVersions()");
+		findAppVersionsLink.setHref(url);
+		linksList.getLink().add(findAppVersionsLink);
+		return linksList;
+
+	}
+
+	//
+	private LinksList addDescribeAppLink(LinksList linksList, String appId) {
+		String url = formatApiURL(apiUrl) + "app/" + appId;
+		Link describeAppLink = new Link();
+		describeAppLink.setAction("GET");
+		describeAppLink.setLabel("describeApplication(appid)");
+		describeAppLink.setHref(url);
+		linksList.getLink().add(describeAppLink);
 		return linksList;
 	}
 
 	//
-	private Map<String, String> addDescribeAppLink(
-			Map<String, String> linksList, String appId) {
-		String url = "http://localhost:8080/OpenShift-API/rest/app/" + appId;
-		linksList.put("[GET]describeApplication(appid)", url);
-		return linksList;
-	}
-
-	//
-	private Map<String, String> addDeleteAppLink(Map<String, String> linksList,
-			String appId) {
-		String url = "http://localhost:8080/OpenShift-API/rest/app/" + appId
-				+ "/delete";
-		linksList.put("[DELETE]deleteApplication(appid)", url);
+	private LinksList addDeleteAppLink(LinksList linksList, String appId) {
+		String url = formatApiURL(apiUrl) + "app/" + appId + "/delete";
+		Link deleteAppLink = new Link();
+		deleteAppLink.setAction("DELETE");
+		deleteAppLink.setLabel("deleteApplication(appid)");
+		deleteAppLink.setHref(url);
+		linksList.getLink().add(deleteAppLink);
 		return linksList;
 	}
 
@@ -500,15 +735,15 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 			checkOSApplications = true;
 
 			IOpenShiftConnection iOpenShiftConnection = new OpenShiftConnectionFactory()
-			.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
-					TEST_USER_PASS, ccUrl);
+					.getConnection(TEST_USER_EMAIL, TEST_USER_EMAIL,
+							TEST_USER_PASS, ccUrl);
 			IUser user = iOpenShiftConnection.getUser();
 			IDomain domain = user.getDefaultDomain();
 
 			List<IApplication> appListOS = null;
 			appListOS = domain.getApplications();
 
-			List<ApplicationXML> appListPool = appPool.INSTANCE.getAppList();
+			
 			for (IApplication ca : appListOS) {
 				String id = Long.toString(getNextId());
 				ApplicationXML app = new ApplicationXML();
@@ -522,13 +757,111 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				app.setGitUrl(ca.getGitUrl());
 				app.setHealthCheckUrl(ca.getHealthCheckUrl());
 
-				Map<String, String> linksList = new HashMap<String, String>();
-				linksList = addFindAppVersionsLink(linksList, id);
+				LinksList linksList = new LinksList();
 				linksList = addDescribeAppLink(linksList, id);
 				linksList = addDeleteAppLink(linksList, id);
 				app.setLinksList(linksList);
-				appPool.INSTANCE.add(app);
+				ApplicationPool.INSTANCE.add(app);
 			}
 		}
 	}
+
+	private static boolean removeDirectory(File directory) {
+		if (directory == null)
+			return false;
+		if (!directory.exists())
+			return true;
+		if (!directory.isDirectory())
+			return false;
+
+		String[] list = directory.list();
+
+		if (list != null) {
+			for (int i = 0; i < list.length; i++) {
+				File entry = new File(directory, list[i]);
+				if (entry.isDirectory()) {
+					if (!removeDirectory(entry))
+						return false;
+				} else {
+					if (!entry.delete())
+						return false;
+				}
+			}
+		}
+
+		return directory.delete();
+	}
+
+	private static void copy(String source, String destination) {
+		InputStream inStream = null;
+		OutputStream outStream = null;
+
+		try {
+
+			File sourcefile = new File(source);
+			File destinationfile = new File(destination);
+
+			inStream = new FileInputStream(sourcefile);
+			outStream = new FileOutputStream(destinationfile);
+
+			byte[] buffer = new byte[1024];
+
+			int length;
+			while ((length = inStream.read(buffer)) > 0) {
+
+				outStream.write(buffer, 0, length);
+			}
+			inStream.close();
+			outStream.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private String formatApiURL(String apiUrl) {
+		apiUrl = apiUrl.trim();
+		if (!apiUrl.endsWith("/"))
+			apiUrl = apiUrl + "/";
+		return apiUrl;
+	}
+	
+	private void writeToFile(InputStream uploadedInputStream,
+			String uploadedFileLocation) {
+
+		try {
+			OutputStream out = new FileOutputStream(new File(
+					uploadedFileLocation));
+			int read = 0;
+			byte[] bytes = new byte[1024];
+
+			out = new FileOutputStream(new File(uploadedFileLocation));
+			while ((read = uploadedInputStream.read(bytes)) != -1) {
+				out.write(bytes, 0, read);
+			}
+			out.flush();
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static boolean deletefile(String uploadedFileLocation) {
+		try{
+    		File file = new File(uploadedFileLocation);
+    		if(file.delete()){
+    			System.out.println(file.getName() + " is deleted!");
+    			return true;
+    		}else{
+    			System.out.println("Delete operation is failed.");
+    			return false;
+    		}
+ 
+    	}catch(Exception e){
+    		e.printStackTrace();
+    		return false;
+    	}
+		
+	}
+
+
 }

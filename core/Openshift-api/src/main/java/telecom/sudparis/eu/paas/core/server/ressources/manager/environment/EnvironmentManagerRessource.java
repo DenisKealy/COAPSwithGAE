@@ -16,20 +16,10 @@
 package telecom.sudparis.eu.paas.core.server.ressources.manager.environment;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.zip.ZipFile;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.core.GenericEntity;
@@ -41,22 +31,16 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.lib.Repository;
-import org.eclipse.jgit.storage.file.FileRepository;
-
-import com.jcraft.jsch.JSch;
-
 import telecom.sudparis.eu.paas.api.ressources.manager.environment.RestEnvironmentManager;
-import telecom.sudparis.eu.paas.core.server.applications.pool.ApplicationPool;
 import telecom.sudparis.eu.paas.core.server.environments.pool.EnvironmentPool;
 import telecom.sudparis.eu.paas.core.server.ressources.exception.NotSupportedException;
-import telecom.sudparis.eu.paas.core.server.xml.ApplicationXML;
 import telecom.sudparis.eu.paas.core.server.xml.EnvironmentXML;
+import telecom.sudparis.eu.paas.core.server.xml.EnvironmentXML.LinksList;
+import telecom.sudparis.eu.paas.core.server.xml.EnvironmentXML.LinksList.Link;
 import telecom.sudparis.eu.paas.core.server.xml.Error;
 import telecom.sudparis.eu.paas.core.server.xml.OperationResponse;
-import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasManifestType;
-import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasNodeType;
+import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationManifestType;
+import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasEnvironmentNodeType;
 
 /**
  * REST resource of type EnvironmentManager
@@ -74,29 +58,9 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 			.getBundle("telecom.sudparis.eu.paas.core.server.ressources.credentials");
 
 	/**
-	 * The target cloud Foundry URL
+	 * The public OS-PaaS API URL
 	 */
-	private static final String ccUrl = rb.getString("vcap.target");
-
-	/**
-	 * The CloudFoundry user mail
-	 */
-	private static final String TEST_USER_EMAIL = rb.getString("vcap.email");
-
-	/**
-	 * The CloudFoundry user password
-	 */
-	private static final String TEST_USER_PASS = rb.getString("vcap.passwd");
-
-	/**
-	 * The Environment pool
-	 */
-	private EnvironmentPool envPool;
-
-	/**
-	 * The Environment pool
-	 */
-	private ApplicationPool appPool;
+	private static String apiUrl = rb.getString("api.public.url");
 
 	/**
 	 * An element to display The response
@@ -107,11 +71,11 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	 * An element to display Errors
 	 */
 	private Error error = new Error();
-	
+
 	@Override
 	public Response deleteEnvironment(String envid) {
 		try {
-			boolean result = envPool.INSTANCE.delete(envid);
+			boolean result = EnvironmentPool.INSTANCE.delete(envid);
 			if (result) {
 				or.setValue("The environment " + envid
 						+ " was succesfully deleted from the Environment pool.");
@@ -126,6 +90,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		} catch (Exception e) {
 			System.out.println("Failed to delete the environment: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to delete the environment: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -135,7 +100,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 
 	@Override
 	public Response findEnvironments() {
-		List<EnvironmentXML> envList = envPool.INSTANCE.getEnvList();
+		List<EnvironmentXML> envList = EnvironmentPool.INSTANCE.getEnvList();
 		if (envList != null) {
 			return Response.status(Response.Status.OK)
 					.entity(new GenericEntity<List<EnvironmentXML>>(envList) {
@@ -149,103 +114,9 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	}
 
 	@Override
-	public Response startEnvironment(String envid) {
-		throw new NotSupportedException();
-
-	}
-
-	@Override
-	public Response stopEnvironment(String envid) {
-		throw new NotSupportedException();
-
-	}
-
-	@Override
-	public Response undeployApplication(String envid, String appid,
-			String versionid, String instanceid) {
-		File theDir=null;
-		String localPath=null;
-		try {
-			ApplicationXML app = appPool.INSTANCE.getApp(appid);
-			EnvironmentXML env=envPool.INSTANCE.getEnv(envid);
-			
-
-			//We only consider the case of an artifact applications
-			if (!app.getDeployable().getDeployableType().equals("artifact")) {
-				System.out.println("Cannot handle this type of application: "
-						+ app.getDeployable().getDeployableType());
-				error.setValue("Cannot handle this type of application: "
-						+ app.getDeployable().getDeployableType());
-				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-						.entity(error).type(MediaType.APPLICATION_XML_TYPE)
-						.build();
-
-			} else {
-				String gitURL = app.getGitUrl();
-				//String localPath = System.getProperty("user.home")
-				//		+ "/PaaS-API-tmp/" + app.getAppName() + "/";
-				
-				localPath="C:/Users/sellami"+"/PaaS-API-tmp-"+app.getAppUUID()+ "/" +app.getAppName() + "/";
-				JSch.setConfig("StrictHostKeyChecking", "no");
-
-				// create Local repository
-				Repository localrepo = new FileRepository(localPath + ".git");
-
-				// Create the git
-				Git git = new Git(localrepo);
-
-				// Clone the Openshift repo
-				git.cloneRepository().setURI(gitURL).setDirectory(new File(localPath)).call();								
-				
-				//If this is the default Git repository generated by Openshift, delete the default app
-				//git rm -r src/ pom.xml
-				String copydestination="deployments/";
-				if (env.getContainerNames().get(0).toLowerCase().contains("jboss"))
-					copydestination="deployments/";
-				
-				git.rm().addFilepattern("-r src/ "+copydestination+" pom.xml").call();
-
-				git.add().addFilepattern(".").call();
-				
-				//Commit changes
-			    git.commit()
-		           .setMessage("Application undeployed by the OS-PaaS API")
-		           .call();
-			    
-			    //Push
-			    git.push()
-		           .call();
-			    
-				// removes the directory before exiting
-				theDir = new File(localPath);
-				System.out.println("Removing Existing directory: "
-						+ localPath);
-				removeDirectory(theDir);
-
-				return Response.status(Response.Status.OK).entity(app)
-						.type(MediaType.APPLICATION_XML_TYPE).build();
-			}
-		} catch (Exception e) {
-			System.out.println("Failed to deploy the application: "
-					+ e.getMessage());
-			e.printStackTrace();
-			if(e.getMessage().contains("already exists and is not an empty directory"))
-				error.setValue("Failed to deploy the application: "
-						+ e.getMessage()+"\n Delete the"+ localPath + "folder");
-			else
-				error.setValue("Failed to deploy the application: "
-					+ e.getMessage());
-			if (theDir!=null && theDir.exists())
-				removeDirectory(theDir);
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
-		}
-	}
-
-	@Override
 	public Response getEnvironment(String envid) {
 		try {
-			EnvironmentXML env = envPool.INSTANCE.getEnv(envid);
+			EnvironmentXML env = EnvironmentPool.INSTANCE.getEnv(envid);
 			if (env != null) {
 				return Response.status(Response.Status.OK)
 						.entity(new GenericEntity<EnvironmentXML>(env) {
@@ -260,16 +131,12 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		} catch (Exception e) {
 			System.out.println("Failed to display the environment: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to display the environment: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
 		}
-	}
-
-	@Override
-	public Response getDeployedApplicationVersionInstance(String envid) {
-		throw new NotSupportedException();
 	}
 
 	@Override
@@ -280,16 +147,16 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 						environmentTemplateDescriptor.getBytes());
 
 				JAXBContext jaxbContext;
-				PaasManifestType manifest = new PaasManifestType();
+				PaasApplicationManifestType manifest = new PaasApplicationManifestType();
 				try {
 					jaxbContext = JAXBContext
 							.newInstance("telecom.sudparis.eu.paas.core.server.xml.manifest");
 					Unmarshaller jaxbUnmarshaller = jaxbContext
 							.createUnmarshaller();
 
-					JAXBElement<PaasManifestType> root = jaxbUnmarshaller
+					JAXBElement<PaasApplicationManifestType> root = jaxbUnmarshaller
 							.unmarshal(new StreamSource(is),
-									PaasManifestType.class);
+									PaasApplicationManifestType.class);
 					manifest = root.getValue();
 
 				} catch (JAXBException e) {
@@ -297,27 +164,26 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 					e.printStackTrace();
 				}
 				// retrieve envName
-				String envName = manifest.getPaasApplication()
-						.getPaasEnvironment().getName();
+				String envName = manifest.getPaasEnvironment()
+						.getName();
 
 				// retrieve envDescription
-				String envDescription = manifest.getPaasApplication()
-						.getPaasEnvironment().getDescription();
+				String envDescription = manifest
+						.getPaasEnvironment().getPaasEnvironmentTemplate().getDescription();
 
 				// TODO consider the case of several containers
 				List<String> containerNames = new ArrayList<String>();
 				List<String> cartridgeNames = new ArrayList<String>();
 
-				List<PaasNodeType> lstNodes = manifest.getPaasApplication()
-						.getPaasConfigurationTemplate().getPaasNode();
+				List<PaasEnvironmentNodeType> lstNodes = manifest.getPaasEnvironment().getPaasEnvironmentTemplate().getPaasEnvironmentNode();
 
-				for (PaasNodeType node : lstNodes) {
+				for (PaasEnvironmentNodeType node : lstNodes) {
 					if (node.getContentType().equals("container"))
 						containerNames.add(node.getName());
 					else if (node.getContentType().equals("database"))
 						cartridgeNames.add(node.getName());
 				}
-				
+
 				// generate envID
 				Long id = getNextId();
 
@@ -327,14 +193,14 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 				env.setEnvDesc(envDescription);
 				env.setContainerNames(containerNames);
 				env.setCartridgeNames(cartridgeNames);
-				
+
 				// add the delete and get environment links
-				Map<String, String> linksList = new HashMap<String, String>();
+				LinksList linksList = new LinksList();
 				linksList = addGetEnvLink(linksList, Long.toString(id));
 				linksList = addDeleteEnvLink(linksList, Long.toString(id));
 				env.setLinksList(linksList);
 
-				envPool.INSTANCE.add(env);
+				EnvironmentPool.INSTANCE.add(env);
 
 				return Response.status(Response.Status.OK)
 						.entity(new GenericEntity<EnvironmentXML>(env) {
@@ -342,7 +208,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 
 			} else {
 				System.out
-				.println("Failed to retrieve the cloud Environment Descriptor");
+						.println("Failed to retrieve the cloud Environment Descriptor");
 				error.setValue("Failed to retrieve the cloud Environment Descriptor.");
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 						.entity(error).build();
@@ -350,6 +216,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		} catch (Exception e) {
 			System.out.println("Failed to create the environment: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to create the environment: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -358,176 +225,54 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	}
 
 	@Override
-	public Response deployApplication(String envid, String appid,
-			String versionid, String instanceid) {
-		File theDir=null;
-		String localPath=null;
-		try {
-			ApplicationXML app = appPool.INSTANCE.getApp(appid);
-			EnvironmentXML env=envPool.INSTANCE.getEnv(envid);
-			
+	public Response updateEnvironment(String envid,
+			String environmentTemplateDescriptor) {
+		throw new NotSupportedException(
+				"The updateEnvironment is not yet implemented.");
+	}
 
-			//We only consider the case of an artifact applications
-			if (!app.getDeployable().getDeployableType().equals("artifact")) {
-				System.out.println("Cannot handle this type of application: "
-						+ app.getDeployable().getDeployableType());
-				error.setValue("Cannot handle this type of application: "
-						+ app.getDeployable().getDeployableType());
-				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-						.entity(error).type(MediaType.APPLICATION_XML_TYPE)
-						.build();
+	@Override
+	public Response getDeployedApplications(String envid) {
+		throw new NotSupportedException(
+				"The getDeployedApplications is not yet implemented.");
+	}
 
-			} else {
-				String gitURL = app.getGitUrl();
-				localPath = System.getProperty("java.io.tmpdir")+ "/PaaS-API-tmp-"+app.getAppUUID()+ "/" +app.getAppName() + "/";
-				
-				//localPath="C:/Users/sellami"+"/PaaS-API-tmp-"+app.getAppUUID()+ "/" +app.getAppName() + "/";
-				System.out.println("localPath: "+localPath);
-				JSch.setConfig("StrictHostKeyChecking", "no");
-
-				// create Local repository
-				Repository localrepo = new FileRepository(localPath + ".git");
-
-				// Create the git
-				Git git = new Git(localrepo);
-
-				// Clone the Openshift repo
-
-				git.cloneRepository().setURI(gitURL).setDirectory(new File(localPath)).call();								
-				
-				//If this is the default Git repository generated by Openshift, delete the default app
-				//git rm -r src/ pom.xml
-				git.rm().addFilepattern("-r src/ pom.xml").call();
-
-				
-				// Add the application archive
-				
-				//Specify the copy destination in the Git repository
-				//This depends on the type of the used environment
-				
-				//TODO consider the other types!!
-				String copydestination="deployments/";
-				if (env.getContainerNames().get(0).toLowerCase().contains("jboss"))
-					copydestination="deployments/";
-
-				String deployableDirectory = app.getDeployable()
-						.getDeployableDirectory();
-				String deployableName = app.getDeployable().getDeployableName();
-				copy(deployableDirectory + "/" + deployableName, localPath + copydestination +
-						 deployableName);
-
-				git.add().addFilepattern(".").call();
-				
-				//Commit changes
-			    git.commit()
-		           .setMessage("Changed by the OS-PaaS API")
-		           .call();
-			    
-			    //Push
-			    git.push()
-		           .call();
-			    
-				// removes the directory before exiting
-				theDir = new File(localPath);
-				System.out.println("Removing Existing directory: "
-						+ localPath);
-				removeDirectory(theDir);
-
-				return Response.status(Response.Status.OK).entity(app)
-						.type(MediaType.APPLICATION_XML_TYPE).build();
-			}
-		} catch (Exception e) {
-			System.out.println("Failed to deploy the application: "
-					+ e.getMessage());
-			e.printStackTrace();
-			if(e.getMessage().contains("already exists and is not an empty directory"))
-				error.setValue("Failed to deploy the application: "
-						+ e.getMessage()+"\n Delete the"+ localPath + "folder");
-			else
-				error.setValue("Failed to deploy the application: "
-					+ e.getMessage());
-			if (theDir!=null && theDir.exists())
-				removeDirectory(theDir);
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
-		}
+	@Override
+	public Response getInformations() {
+		throw new NotSupportedException(
+				"The getInformations is not yet implemented.");
 	}
 
 	// private methods
 	private synchronized Long getNextId() {
-		return new Long(envPool.INSTANCE.getNextID());
+		return new Long(EnvironmentPool.INSTANCE.getNextID());
 	}
 
-	private Map<String, String> addDeleteEnvLink(Map<String, String> linksList,
-			String envId) {
-		String url = "http://localhost:8080/CF-api/rest/environment/" + envId;
-		linksList.put("[DELETE]deleteEnvironment(envid)", url);
+	private LinksList addDeleteEnvLink(LinksList linksList, String envId) {
+		String url = formatApiURL(apiUrl) + "environment/" + envId;
+		Link deleteEnvLink = new Link();
+		deleteEnvLink.setAction("DELETE");
+		deleteEnvLink.setLabel("deleteEnvironment(envid)");
+		deleteEnvLink.setHref(url);
+		linksList.getLink().add(deleteEnvLink);
 		return linksList;
 	}
 
-	private Map<String, String> addGetEnvLink(Map<String, String> linksList,
-			String envId) {
-		String url = "http://localhost:8080/CF-api/rest/environment/" + envId;
-		linksList.put("[GET]getEnvironment(envid)", url);
+	private LinksList addGetEnvLink(LinksList linksList, String envId) {
+		String url = formatApiURL(apiUrl) + "environment/" + envId;
+		Link getEnvLink = new Link();
+		getEnvLink.setAction("GET");
+		getEnvLink.setLabel("getEnvironment(envid)");
+		getEnvLink.setHref(url);
+		linksList.getLink().add(getEnvLink);
 		return linksList;
 	}
 
-	public static boolean removeDirectory(File directory) {
-		  if (directory == null)
-		    return false;
-		  if (!directory.exists())
-		    return true;
-		  if (!directory.isDirectory())
-		    return false;
-
-		  String[] list = directory.list();
-
-		  if (list != null) {
-		    for (int i = 0; i < list.length; i++) {
-		      File entry = new File(directory, list[i]);
-		      if (entry.isDirectory())
-		      {
-		        if (!removeDirectory(entry))
-		          return false;
-		      }
-		      else
-		      {
-		        if (!entry.delete())
-		          return false;
-		      }
-		    }
-		  }
-
-		  return directory.delete();
-		}
-
-
-	private static void copy(String source, String destination) {
-		InputStream inStream = null;
-		OutputStream outStream = null;
-
-		try {
-
-			File sourcefile = new File(source);
-			File destinationfile = new File(destination);
-
-			inStream = new FileInputStream(sourcefile);
-			outStream = new FileOutputStream(destinationfile);
-
-			byte[] buffer = new byte[1024];
-
-			int length;
-			while ((length = inStream.read(buffer)) > 0) {
-
-				outStream.write(buffer, 0, length);
-			}
-			inStream.close();
-			outStream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	private String formatApiURL(String apiUrl) {
+		apiUrl = apiUrl.trim();
+		if (!apiUrl.endsWith("/"))
+			apiUrl = apiUrl + "/";
+		return apiUrl;
 	}
-	
-	
 
 }

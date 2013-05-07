@@ -15,14 +15,18 @@
  ******************************************************************************/
 package telecom.sudparis.eu.paas.core.server.environments.pool;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
+import telecom.sudparis.eu.paas.core.server.applications.pool.Application;
+import telecom.sudparis.eu.paas.core.server.xml.StagingXML;
+
 
 /**
  * An Environment
@@ -48,6 +52,12 @@ public class Environment {
 	 */
 	@XmlAttribute
 	private String envName;
+	
+	/**
+	 * Environment memory
+	 */
+	@XmlAttribute
+	private long envMemory;
 
 	/**
 	 * Environment description
@@ -58,8 +68,10 @@ public class Environment {
 	/**
 	 * The staging
 	 */
-	@XmlElement
-	private Map<String, String> staging;
+	//@XmlElement
+	//private Map<String, String> staging;
+	 @XmlElement
+	 private StagingXML staging;
 
 	/**
 	 * The service Names
@@ -71,7 +83,7 @@ public class Environment {
 	 * List of the provided Links for the Application
 	 */
 	@XmlElement
-	private Map<String, String> linksList;
+    protected Environment.LinksList linksList;
 
 	public String getEnvId() {
 		return envId;
@@ -97,11 +109,11 @@ public class Environment {
 		this.envDesc = envDesc;
 	}
 
-	public Map<String, String> getStaging() {
+	public StagingXML getStaging() {
 		return staging;
 	}
 
-	public void setStaging(Map<String, String> staging) {
+	public void setStaging(StagingXML staging) {
 		this.staging = staging;
 	}
 
@@ -112,13 +124,142 @@ public class Environment {
 	public void setServiceNames(List<String> serviceNames) {
 		this.serviceNames = serviceNames;
 	}
+		
 
-	public Map<String, String> getLinksList() {
-		return linksList;
+	/**
+     * Gets the value of the linksList property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Application.LinksList }
+     *     
+     */
+    public Environment.LinksList getLinksList() {
+        return linksList;
+    }
+
+    /**
+     * Sets the value of the linksList property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Application.LinksList }
+     *     
+     */
+    public void setLinksList(Environment.LinksList value) {
+        this.linksList = value;
+    }
+
+
+    public long getEnvMemory() {
+		return envMemory;
 	}
 
-	public void setLinksList(Map<String, String> linksList) {
-		this.linksList = linksList;
+	public void setEnvMemory(long envMemory) {
+		this.envMemory = envMemory;
 	}
+
+
+	@XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class LinksList {
+
+        @XmlElement
+        protected List<Environment.LinksList.Link> link;
+
+        public List<Environment.LinksList.Link> getLink() {
+            if (link == null) {
+                link = new ArrayList<Environment.LinksList.Link>();
+            }
+            return this.link;
+        }
+
+
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class Link {
+
+            @XmlAttribute
+            protected String label;
+            @XmlAttribute
+            protected String action;
+            @XmlAttribute
+            protected String href;
+
+            /**
+             * Gets the value of the label property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getLabel() {
+                return label;
+            }
+
+            /**
+             * Sets the value of the label property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setLabel(String value) {
+                this.label = value;
+            }
+
+            /**
+             * Gets the value of the action property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getAction() {
+                return action;
+            }
+
+            /**
+             * Sets the value of the action property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setAction(String value) {
+                this.action = value;
+            }
+
+            /**
+             * Gets the value of the href property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getHref() {
+                return href;
+            }
+
+            /**
+             * Sets the value of the href property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setHref(String value) {
+                this.href = value;
+            }
+
+        }
+
+    }
 
 }

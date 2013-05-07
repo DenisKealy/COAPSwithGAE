@@ -1,16 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
-  <display-name>COAPS Web Client</display-name>
+  <display-name>star-PaaS API Web Client</display-name>
   <servlet>
-    <servlet-name>COAPS Web Client</servlet-name>
+    <servlet-name>star-PaaS API Web Client</servlet-name>
     <servlet-class>telecom.sudparis.eu.paas.client.APIClient</servlet-class>
   </servlet>
   <servlet-mapping>
-    <servlet-name>COAPS Web Client</servlet-name>
+    <servlet-name>star-PaaS API Web Client</servlet-name>
     <url-pattern>/APIClient</url-pattern>
   </servlet-mapping>
   <welcome-file-list>
     <welcome-file>index.html</welcome-file>
     <welcome-file>index.jsp</welcome-file>
   </welcome-file-list>
+  
+    <security-constraint>
+    <web-resource-collection>
+      <web-resource-name>Wildcard means whole app requires authentication</web-resource-name>
+      <url-pattern>/*</url-pattern>
+      <http-method>GET</http-method>
+      <http-method>POST</http-method>
+    </web-resource-collection>
+    <auth-constraint>
+      <role-name>coaps-client</role-name>
+    </auth-constraint>
+    <user-data-constraint>
+      <transport-guarantee>NONE</transport-guarantee>
+    </user-data-constraint>
+  </security-constraint>
+    <security-role>
+	<description>security role assignment for Non-Existent Role – this prevents direct access to JSPs</description>
+	<role-name>coaps-client</role-name>
+  </security-role>
+  <login-config>
+    <auth-method>BASIC</auth-method>
+  </login-config>
 </web-app>

@@ -17,9 +17,8 @@ package telecom.sudparis.eu.paas.core.server.environments.pool;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-import telecom.sudparis.eu.paas.core.server.applications.pool.Application;
+import telecom.sudparis.eu.paas.core.server.environments.pool.Environment.LinksList;
 
 /**
  * @author sellami
@@ -77,7 +76,7 @@ public enum EnvironmentPool {
 		return null;
 	}
 	
-	public void updateEnv(String envId, Map<String, String> linksList){
+	public void updateEnv(String envId, LinksList linksList){
 		Environment env=getEnv(envId);
 		envList.remove(env);
 		env.setLinksList(linksList);

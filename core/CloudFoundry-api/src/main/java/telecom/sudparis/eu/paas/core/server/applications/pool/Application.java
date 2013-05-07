@@ -15,15 +15,17 @@
  ******************************************************************************/
 package telecom.sudparis.eu.paas.core.server.applications.pool;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
 
 import telecom.sudparis.eu.paas.core.server.xml.RessourcesXML;
 import telecom.sudparis.eu.paas.core.server.xml.StagingXML;
@@ -119,9 +121,12 @@ public class Application {
 	/**
 	 * List of the provided Links for the Application
 	 */
+
+	//private List<Link> linksList;
 	@XmlElement
-	private Map<String, String> linksList;
+    protected Application.LinksList linksList;
 	
+
 	public String getAppName() {
 		return appName;
 	}
@@ -186,13 +191,6 @@ public class Application {
 		this.versionInstances = versionInstances;
 	}
 
-	public Map<String, String> getLinksList() {
-		return linksList;
-	}
-
-	public void setLinksList(Map<String, String> linksList) {
-		this.linksList = linksList;
-	}
 
 	public String getStatus() {
 		return status;
@@ -234,6 +232,130 @@ public class Application {
 		this.nbInstances = nbInstances;
 	}
 	
-	
+	 /**
+     * Gets the value of the linksList property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link Application.LinksList }
+     *     
+     */
+    public Application.LinksList getLinksList() {
+        return linksList;
+    }
 
+    /**
+     * Sets the value of the linksList property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link Application.LinksList }
+     *     
+     */
+    public void setLinksList(Application.LinksList value) {
+        this.linksList = value;
+    }
+
+
+    @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "")
+    public static class LinksList {
+
+        @XmlElement
+        protected List<Application.LinksList.Link> link;
+
+        public List<Application.LinksList.Link> getLink() {
+            if (link == null) {
+                link = new ArrayList<Application.LinksList.Link>();
+            }
+            return this.link;
+        }
+
+        @XmlAccessorType(XmlAccessType.FIELD)
+        @XmlType(name = "")
+        public static class Link {
+
+            @XmlAttribute
+            protected String label;
+            @XmlAttribute
+            protected String action;
+            @XmlAttribute
+            protected String href;
+
+            /**
+             * Gets the value of the label property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getLabel() {
+                return label;
+            }
+
+            /**
+             * Sets the value of the label property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setLabel(String value) {
+                this.label = value;
+            }
+
+            /**
+             * Gets the value of the action property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getAction() {
+                return action;
+            }
+
+            /**
+             * Sets the value of the action property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setAction(String value) {
+                this.action = value;
+            }
+
+            /**
+             * Gets the value of the href property.
+             * 
+             * @return
+             *     possible object is
+             *     {@link String }
+             *     
+             */
+            public String getHref() {
+                return href;
+            }
+
+            /**
+             * Sets the value of the href property.
+             * 
+             * @param value
+             *     allowed object is
+             *     {@link String }
+             *     
+             */
+            public void setHref(String value) {
+                this.href = value;
+            }
+
+        }
+
+    }
+    
 }

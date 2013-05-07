@@ -16,16 +16,10 @@
 package telecom.sudparis.eu.paas.core.server.ressources.manager.environment;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.zip.ZipFile;
 
 import javax.ws.rs.Path;
 import javax.ws.rs.core.GenericEntity;
@@ -37,34 +31,19 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 
-import org.cloudfoundry.client.lib.CloudCredentials;
-import org.cloudfoundry.client.lib.CloudFoundryClient;
-import org.cloudfoundry.client.lib.archive.ApplicationArchive;
-import org.cloudfoundry.client.lib.archive.DirectoryApplicationArchive;
-import org.cloudfoundry.client.lib.archive.ZipApplicationArchive;
-import org.cloudfoundry.client.lib.domain.CloudApplication;
-import org.cloudfoundry.client.lib.domain.CloudDomain;
-import org.cloudfoundry.client.lib.domain.CloudEntity;
-import org.cloudfoundry.client.lib.domain.CloudInfo;
-import org.cloudfoundry.client.lib.domain.CloudInfo.Runtime;
-import org.cloudfoundry.client.lib.domain.CloudResource;
-import org.cloudfoundry.client.lib.domain.CloudResources;
-import org.cloudfoundry.client.lib.domain.CloudService;
 import org.cloudfoundry.client.lib.domain.Staging;
-import org.cloudfoundry.client.lib.util.CloudUtil;
-import org.omg.SendingContext.RunTime;
-import org.springframework.web.client.HttpServerErrorException;
 
 import telecom.sudparis.eu.paas.api.ressources.manager.environment.RestEnvironmentManager;
-import telecom.sudparis.eu.paas.core.server.applications.pool.Application;
-import telecom.sudparis.eu.paas.core.server.applications.pool.ApplicationPool;
 import telecom.sudparis.eu.paas.core.server.environments.pool.Environment;
+import telecom.sudparis.eu.paas.core.server.environments.pool.Environment.LinksList;
+import telecom.sudparis.eu.paas.core.server.environments.pool.Environment.LinksList.Link;
 import telecom.sudparis.eu.paas.core.server.environments.pool.EnvironmentPool;
 import telecom.sudparis.eu.paas.core.server.ressources.exception.NotSupportedException;
 import telecom.sudparis.eu.paas.core.server.xml.Error;
 import telecom.sudparis.eu.paas.core.server.xml.OperationResponse;
-import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasManifestType;
-import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasNodeType;
+import telecom.sudparis.eu.paas.core.server.xml.StagingXML;
+import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationManifestType;
+import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasEnvironmentNodeType;
 
 /**
  * REST resource of type EnvironmentManager
@@ -81,30 +60,13 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	private static ResourceBundle rb = ResourceBundle
 			.getBundle("telecom.sudparis.eu.paas.core.server.ressources.credentials");
 
-	/**
-	 * The target cloud Foundry URL
-	 */
-	private static final String ccUrl = rb.getString("vcap.target");
 
 	/**
-	 * The CloudFoundry user mail
+	 * The public CF-PaaS API URL
 	 */
-	private static final String TEST_USER_EMAIL = rb.getString("vcap.email");
+	private static String apiUrl = rb.getString("api.public.url");
 
-	/**
-	 * The CloudFoundry user password
-	 */
-	private static final String TEST_USER_PASS = rb.getString("vcap.passwd");
 
-	/**
-	 * The Environment pool
-	 */
-	private EnvironmentPool envPool;
-
-	/**
-	 * The Environment pool
-	 */
-	private ApplicationPool appPool;
 
 	/**
 	 * An element to display The response
@@ -137,16 +99,16 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 						environmentTemplateDescriptor.getBytes());
 
 				JAXBContext jaxbContext;
-				PaasManifestType manifest = new PaasManifestType();
+				PaasApplicationManifestType manifest = new PaasApplicationManifestType();
 				try {
 					jaxbContext = JAXBContext
 							.newInstance("telecom.sudparis.eu.paas.core.server.xml.manifest");
 					Unmarshaller jaxbUnmarshaller = jaxbContext
 							.createUnmarshaller();
 
-					JAXBElement<PaasManifestType> root = jaxbUnmarshaller
+					JAXBElement<PaasApplicationManifestType> root = jaxbUnmarshaller
 							.unmarshal(new StreamSource(is),
-									PaasManifestType.class);
+									PaasApplicationManifestType.class);
 					manifest = root.getValue();
 
 				} catch (JAXBException e) {
@@ -154,12 +116,15 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 					e.printStackTrace();
 				}
 				// retrieve envName
-				String envName = manifest.getPaasApplication()
-						.getPaasEnvironment().getName();
+				String envName = manifest.getPaasEnvironment()
+						.getName();
+				
+				// retrieve memory
+				long envMemory = Long.parseLong(manifest.getPaasEnvironment().getPaasEnvironmentTemplate().getMemory());
 
 				// retrieve envDescription
-				String envDescription = manifest.getPaasApplication()
-						.getPaasEnvironment().getDescription();
+				String envDescription = manifest.getPaasEnvironment()
+						.getPaasEnvironmentTemplate().getDescription();
 
 				// retrieve staging.
 
@@ -171,10 +136,10 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 				// containerNames.add("tomcat");// we consider only one
 				// container
 				List<String> serviceNames = new ArrayList<String>();
-				List<PaasNodeType> lstNodes = manifest.getPaasApplication()
-						.getPaasConfigurationTemplate().getPaasNode();
+				List<PaasEnvironmentNodeType> lstNodes = manifest.getPaasEnvironment()
+						.getPaasEnvironmentTemplate().getPaasEnvironmentNode();
 
-				for (PaasNodeType node : lstNodes) {
+				for (PaasEnvironmentNodeType node : lstNodes) {
 					// If no container was specified in the Environment
 					// Descriptor, Tomcat will be choosen
 					if (node.getContentType().equals("container")) {
@@ -182,35 +147,46 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 						containerVersions.add(node.getVersion());
 					} else if (node.getContentType().equals("database"))
 						serviceNames.add(node.getName());
-				}
+				}	
 
-				Map<String, String> staging = new HashMap<String, String>();
 
 				// TODO this value may be useful when handling several
 				// containers
 				int containerIndex = 0;
+				//the default value of staging
+				Staging s=new Staging(JAVA6, JAVA_WEB);
+				s.setCommand("no");
 				for (String cName : containerNames) {
 					if (cName.equals("tomcat")) {
 						if (containerVersions.get(containerIndex).startsWith(
 								"6")) {
-							staging.put("runtime", JAVA6);
+							s=new Staging(JAVA6, JAVA_WEB);
+							s.setCommand("no");
+							//staging.put("runtime", JAVA6);
 						} else if (containerVersions.get(containerIndex)
 								.startsWith("7")) {
-							staging.put("runtime", JAVA7);
+							s=new Staging(JAVA7, JAVA_WEB);
+							s.setCommand("no");
+							//staging.put("runtime", JAVA7);
 						}
-						staging.put("framework", JAVA_WEB);
-						staging.put("command", "no");
+						//staging.put("framework", JAVA_WEB);
+						
 					} else if (cName.equals("spring")) {
-						staging.put("runtime", JAVA6);
-						staging.put("framework", SPRING_WEB);
-						staging.put("command", "no");
+						s=new Staging(JAVA6, SPRING_WEB);
+						s.setCommand("no");
+						//staging.put("runtime", JAVA6);
+						//staging.put("framework", SPRING_WEB);
+						//staging.put("command", "no");
 					} else if (cName.equals("node.js")) {
-						staging.put("runtime", NODE);
-						staging.put("framework", NODE);
-						staging.put("command", "no");
+						s=new Staging(NODE, NODE);
+						s.setCommand("no");
+						//staging.put("runtime", NODE);
+						//staging.put("framework", NODE);
+						//staging.put("command", "no");
 					}
 					containerIndex++;
 				}
+				StagingXML staging = new StagingXML(s);
 
 				// generate envID
 				Long id = getNextId();
@@ -221,14 +197,15 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 				env.setEnvDesc(envDescription);
 				env.setStaging(staging);
 				env.setServiceNames(serviceNames);
+				env.setEnvMemory(envMemory);
 
 				// add the delete and get environment links
-				Map<String, String> linksList = new HashMap<String, String>();
+				LinksList linksList = new LinksList();
 				linksList = addGetEnvLink(linksList, Long.toString(id));
 				linksList = addDeleteEnvLink(linksList, Long.toString(id));
 				env.setLinksList(linksList);
 
-				envPool.INSTANCE.add(env);
+				EnvironmentPool.INSTANCE.add(env);
 
 				return Response.status(Response.Status.OK)
 						.entity(new GenericEntity<Environment>(env) {
@@ -236,7 +213,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 
 			} else {
 				System.out
-				.println("Failed to retrieve the cloud Environment Descriptor");
+						.println("Failed to retrieve the cloud Environment Descriptor");
 				error.setValue("Failed to retrieve the cloud Environment Descriptor.");
 				return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 						.entity(error).build();
@@ -244,6 +221,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		} catch (Exception e) {
 			System.out.println("Failed to create the environment: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to create the environment: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -254,7 +232,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	@Override
 	public Response deleteEnvironment(String envid) {
 		try {
-			boolean result = envPool.INSTANCE.delete(envid);
+			boolean result = EnvironmentPool.INSTANCE.delete(envid);
 			if (result) {
 				or.setValue("The environment " + envid
 						+ " was succesfully deleted from the Environment pool.");
@@ -269,6 +247,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		} catch (Exception e) {
 			System.out.println("Failed to delete the environment: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to delete the environment: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -278,7 +257,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 
 	@Override
 	public Response findEnvironments() {
-		List<Environment> envList = envPool.INSTANCE.getEnvList();
+		List<Environment> envList = EnvironmentPool.INSTANCE.getEnvList();
 		if (envList != null) {
 			return Response.status(Response.Status.OK)
 					.entity(new GenericEntity<List<Environment>>(envList) {
@@ -292,156 +271,9 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	}
 
 	@Override
-	public Response startEnvironment(String envid) {
-		throw new NotSupportedException(
-				"The environment in Cloud Foundry is started along with the application.");
-	}
-
-	@Override
-	public Response stopEnvironment(String envid) {
-		throw new NotSupportedException(
-				"The environment in Cloud Foundry is stoped along with the application.");
-	}
-
-	@Override
-	public Response deployApplication(String envid, String appid,
-			String versionid, String instanceid) {
-		try {
-			Environment env = envPool.INSTANCE.getEnv(envid);
-			Application app = appPool.INSTANCE.getApp(appid);
-
-			CloudFoundryClient client = null;
-			List<String> servicesList = env.getServiceNames();
-
-			try {
-				client = new CloudFoundryClient(new CloudCredentials(
-						TEST_USER_EMAIL, TEST_USER_PASS), new URL(ccUrl));
-			} catch (MalformedURLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-
-			if (client == null) {
-				System.out.println("Failed to create Client");
-			} else {
-				client.login();
-				String runtime = env.getStaging().get("runtime");
-				System.out.println("env.getStaging().get(runtime) = "
-						+ env.getStaging().get("runtime"));
-				String framework = env.getStaging().get("framework");
-				Staging staging = new Staging(runtime, framework);
-
-				List<CloudService> servicesLst = client.getServices();
-
-				// Services Creation if not already exits
-				// TODO create the other supported services
-				if (servicesList != null && servicesList.size() != 0) {
-					for (String serviceName : servicesList) {
-						if (serviceName.toLowerCase().contains("mysql")) {
-							if (!serviceExists(serviceName, client))
-								createMySqlService(serviceName, client);
-						} else if (serviceName.toLowerCase().contains("redis")) {
-							if (!serviceExists(serviceName, client))
-								createRedisService(serviceName, client);
-						}
-					}
-				}
-				// create the application
-				client.createApplication(app.getAppName(), staging,
-						(int) app.getMemory(), app.getUris(),
-						env.getServiceNames(), app.isCheckExists());
-
-				// Sets the number of instances
-				if (app.getNbInstances() > 0)
-					client.updateApplicationInstances(app.getAppName(),
-							app.getNbInstances());
-
-				// Services binding
-				if (servicesLst != null && servicesLst.size() != 0)
-					for (String serviceName : servicesList) {
-						if (serviceName != null) {
-							client.bindService(app.getAppName(), serviceName);
-						}
-					}
-
-				// TODO upload Application we treated only the case of an
-				// artifact
-				if (app.getDeployable().getDeployableType().equals("artifact")) {
-					String artefactFileName = app.getDeployable()
-							.getDeployableName();
-					String artefactFilePath = app.getDeployable()
-							.getDeployableDirectory().replace("\\", "/");
-					if (!artefactFilePath.endsWith("/"))
-						artefactFilePath = artefactFilePath + "/";
-					File artefactFile = new File(artefactFilePath
-							+ artefactFileName);
-					ZipFile zipFile = new ZipFile(artefactFile);
-					ApplicationArchive appArchive = new ZipApplicationArchive(
-							zipFile);
-					try {
-						client.uploadApplication(app.getAppName(), appArchive);
-					} catch (HttpServerErrorException e) {
-						// this is to avoid timeout exceptions that occurs
-						// during
-						// the upload of large applications
-						// TODO add a method to see the status of the upload
-						System.out
-						.println("[DeployApplication]: Entering HttpServerErrorException....");
-					}
-				} else if (app.getDeployable().getDeployableType()
-						.equals("folder")) {
-					String folderPath = app.getDeployable()
-							.getDeployableDirectory().replace("\\", "/");
-					File folderFile = new File(folderPath);
-					ApplicationArchive archive = new DirectoryApplicationArchive(
-							folderFile);
-					// client.uploadApplication(app.getAppName(), archive);
-					try {
-						client.uploadApplication(app.getAppName(), app
-								.getDeployable().getDeployableDirectory()
-								.replace("\\", "/"));
-					} catch (HttpServerErrorException e) {
-						// this is to avoid timeout exceptions that occurs
-						// during the
-						// upload of large applications
-						// TODO add a method to see the status of the upload
-						System.out
-						.println("[DeployApplication]: Entering HttpServerErrorException....");
-					}
-				}
-				client.logout();
-			}
-			// update the Application with describeApp and deleteApp links
-			Map<String, String> linksList = appPool.INSTANCE.getApp(appid)
-					.getLinksList();
-			linksList = addDescribeAppLink(linksList, appid);
-			linksList = addDeleteAppLink(linksList, appid);
-			appPool.INSTANCE.updateApp(appid, linksList);
-
-			return Response.status(Response.Status.OK).entity(app)
-					.type(MediaType.APPLICATION_XML_TYPE).build();
-		} catch (Exception e) {
-			System.out.println("Failed to deploy the environment: "
-					+ e.getMessage());
-			e.printStackTrace();
-			error.setValue("Failed to deploy the environment: "
-					+ e.getMessage());
-			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
-		}
-	}
-
-	@Override
-	public Response undeployApplication(String envid, String appid,
-			String versionid, String instanceid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public Response getEnvironment(String envid) {
 		try {
-			Environment env = envPool.INSTANCE.getEnv(envid);
+			Environment env = EnvironmentPool.INSTANCE.getEnv(envid);
 			if (env != null) {
 				return Response.status(Response.Status.OK)
 						.entity(new GenericEntity<Environment>(env) {
@@ -456,6 +288,7 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		} catch (Exception e) {
 			System.out.println("Failed to display the environment: "
 					+ e.getMessage());
+			e.printStackTrace();
 			error.setValue("Failed to display the environment: "
 					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
@@ -464,79 +297,51 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	}
 
 	@Override
-	public Response getDeployedApplicationVersionInstance(String envid) {
-		throw new NotSupportedException();
+	public Response updateEnvironment(String envid,
+			String environmentTemplateDescriptor) {
+		throw new NotSupportedException("The updateEnvironment is not yet implemented.");
+	}
+
+	@Override
+	public Response getDeployedApplications(String envid) {
+		throw new NotSupportedException("The getDeployedApplications is not yet implemented.");
+	}
+	
+	@Override
+	public Response getInformations() {
+		throw new NotSupportedException("The getInformations is not yet implemented.");
 	}
 
 	// private methods
 	private synchronized Long getNextId() {
-		return new Long(envPool.INSTANCE.getNextID());
+		return new Long(EnvironmentPool.INSTANCE.getNextID());
 	}
 
-	private void createMySqlService(String serviceName,
-			CloudFoundryClient client) {
-		CloudService service = new CloudService(CloudEntity.Meta.defaultMeta(),
-				serviceName);
-
-		service.setType("database");
-		service.setVersion("5.1");
-		service.setProvider("core");
-		service.setVendor("mysql");
-		service.setTier("free");
-
-		client.createService(service);
-	}
-
-	private void createRedisService(String serviceName,
-			CloudFoundryClient client) {
-		CloudService service = new CloudService(CloudEntity.Meta.defaultMeta(),
-				serviceName);
-
-		service.setType("key-value");
-		service.setVersion("2.2");
-		service.setProvider("core");
-		service.setVendor("redis");
-		service.setTier("free");
-
-		client.createService(service);
-	}
-
-	private boolean serviceExists(String serviceName, CloudFoundryClient client) {
-		try {
-			client.getService(serviceName);
-			return true;
-		} catch (org.cloudfoundry.client.lib.CloudFoundryException e) {
-			return false;
-		}
-	}
-
-	private Map<String, String> addDescribeAppLink(
-			Map<String, String> linksList, String appId) {
-		String url = "http://localhost:8080/CF-api/rest/app/" + appId;
-		linksList.put("[GET]describeApplication(appid)", url);
+	private LinksList addDeleteEnvLink(LinksList linksList, String envId) {
+		String url = formatApiURL(apiUrl) + "environment/" + envId;
+		Link deleteEnvLink = new Link();
+		deleteEnvLink.setAction("DELETE");
+		deleteEnvLink.setLabel("deleteEnvironment()");
+		deleteEnvLink.setHref(url);
+		linksList.getLink().add(deleteEnvLink);
 		return linksList;
 	}
 
-	private Map<String, String> addDeleteAppLink(Map<String, String> linksList,
-			String appId) {
-		String url = "http://localhost:8080/CF-api/rest/app/" + appId
-				+ "/delete";
-		linksList.put("[DELETE]deleteApplication(appid)", url);
+	private LinksList addGetEnvLink(LinksList linksList, String envId) {
+		String url = formatApiURL(apiUrl) + "environment/" + envId;
+		Link getEnvLink = new Link();
+		getEnvLink.setAction("GET");
+		getEnvLink.setLabel("getEnvironment()");
+		getEnvLink.setHref(url);
+		linksList.getLink().add(getEnvLink);
 		return linksList;
 	}
 
-	private Map<String, String> addDeleteEnvLink(Map<String, String> linksList,
-			String envId) {
-		String url = "http://localhost:8080/CF-api/rest/environment/" + envId;
-		linksList.put("[DELETE]deleteEnvironment(envid)", url);
-		return linksList;
-	}
-
-	private Map<String, String> addGetEnvLink(Map<String, String> linksList,
-			String envId) {
-		String url = "http://localhost:8080/CF-api/rest/environment/" + envId;
-		linksList.put("[GET]getEnvironment(envid)", url);
-		return linksList;
+	private String formatApiURL(String apiUrl) {
+		apiUrl = apiUrl.trim();
+		if (!apiUrl.endsWith("/"))
+			apiUrl = apiUrl + "/";
+		return apiUrl;
 	}
 
 }

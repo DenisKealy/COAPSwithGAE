@@ -3,7 +3,7 @@
  <body>
   <% java.util.ResourceBundle rb = java.util.ResourceBundle.getBundle("telecom.sudparis.eu.paas.core.server.ressources.credentials");
  %>
-  <h1> The Openshift Implementation of COAPS is now running. </h1>
+  <h1> The Openshift Implementation of *-PaaS API is now running. </h1>
   <h3> See the WADL description at: <a href=http://localhost:8080/OS-api/rest/application.wadl> http://localhost:8080/OS-api/rest/application.wadl </a></h3>
   <h4> By default, This API implementation is connected on <b><%out.print(rb.getString("vcap.target")); %></b> as <b><%out.print(rb.getString("vcap.email")); %>.</b></h3>
   <h4> These parameters can be updated from: <b>telecom.sudparis.eu.paas.core.server.ressources.credentials.properties</b></h4>

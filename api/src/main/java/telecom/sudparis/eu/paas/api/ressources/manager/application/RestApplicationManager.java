@@ -15,6 +15,8 @@
  ******************************************************************************/
 package telecom.sudparis.eu.paas.api.ressources.manager.application;
 
+import java.io.InputStream;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -22,7 +24,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.sun.jersey.multipart.FormDataParam;
 
 @Path("app")
 public interface RestApplicationManager {
@@ -40,40 +45,37 @@ public interface RestApplicationManager {
 	@Consumes("application/xml")
 	@Produces("application/xml")
 	Response createApplication(String cloudApplicationDescriptor);
-
+	
+	
+//	/**
+//	 * Uploads a file. Used for the application deployable files uplaod 
+//	 * Command: POST /app/upload
+//	 * 
+//	 * @param file
+//	 *            The file to upload.
+//	 * @return 
+//	 */
+//	@POST
+//	@Path("{appId}/upload")
+//	@Consumes(MediaType.MULTIPART_FORM_DATA)
+//	Response upoadFile(@PathParam("appId") String appid,
+//			@FormDataParam("file") InputStream uploadedInputStream,
+//			@FormDataParam("file") FormDataContentDisposition fileDetail);
+	
+	
 	/**
-	 * TODO <br>
-	 * Command: POST /app/{appId}/version/{versionId}/instance
+	 * Updates an existing application. Command: POST /app/{appId}/update
 	 * 
-	 * @param applicationVersionInstanceDescriptor
-	 *            A Cloud Application Version Descriptor must be provided.
-	 * @return XML file An: TODO
+	 * @param cloudApplicationDescriptor
+	 *            A Cloud Application Descriptor (manifest) must be provided.
+	 * @return XML file An: enriched Cloud Application Descriptor (manifest).
+	 *         The appID and Link element will be added to the Manifest.
 	 */
-
 	@POST
-	@Path("{appId}/version/{versionId}/instance")
+	@Path("{appId}/update")
 	@Consumes("application/xml")
 	@Produces("application/xml")
-	Response createApplicationVersionInstance(@PathParam("appId") String appId,
-			String applicationVersionInstanceDescriptor);
-
-	/**
-	 * Creates a new version with either a file in attachment (Content-Type:
-	 * multipart/form-data). or a url. The supported artefacts are ear, bundle,
-	 * war, ejbjar or a zip (war dir). A Cloud Application Version Descriptor
-	 * must be provided. <br>
-	 * Command: POST /app/{appId}/version
-	 * 
-	 * @param applicationVersionDescriptor
-	 *            A Cloud Application Version Descriptor must be provided.
-	 * @return XML file An: enriched Cloud Application Version Descriptor. The
-	 *         appID and Link element will be added to the Manifest.
-	 */
-	@POST
-	@Path("{appId}/version/create")
-	@Produces("application/xml")
-	Response createApplicationVersion(@PathParam("appId") String appId,
-			String applicationVersionDescriptor);
+	Response updateApplication(@PathParam("appId") String appid,String cloudApplicationDescriptor);
 
 	/**
 	 * List applications Command: GET /app/
@@ -84,50 +86,17 @@ public interface RestApplicationManager {
 	Response findApplications();
 
 	/**
-	 * List application versions Command: GET /app/{appId}/version
-	 * 
-	 * @param appid
-	 *            The application's ID
-	 * @return A list of available application's versions
-	 */
-	@GET
-	@Path("{appId}/version")
-	Response findApplicationVersions(@PathParam("appId") String appid);
-
-	/**
-	 * List application version instances Command: GET
-	 * /app/{appId}/version/{versionId}
-	 * 
-	 * @param appid
-	 *            The application's ID
-	 * @param versionid
-	 *            The application version's ID
-	 * @return A list of available application versions' instances
-	 */
-
-	@GET
-	@Path("{appId}/version/{versionId}")
-	Response findApplicationVersionInstances(@PathParam("appId") String appid,
-			@PathParam("versionId") String versionid);
-
-	/**
 	 * Start an application version instance Command: POST
 	 * /app/{appId}/version/{versionId}/instance/{instanceId}/action/start
 	 * 
 	 * @param appid
 	 *            The application's ID
-	 * @param versionid
-	 *            The application version's ID
-	 * @param instanceId
-	 *            The application instance's ID
 	 * @return \\TODO
 	 */
 
 	@POST
-	@Path("{appId}/version/{versionId}/instance/{instanceId}/action/start")
-	Response startApplicationVersionInstance(@PathParam("appId") String appid,
-			@PathParam("versionId") String versionid,
-			@PathParam("instanceId") String instanceid);
+	@Path("{appId}/start")
+	Response startApplication(@PathParam("appId") String appid);
 
 	/**
 	 * Stop an application version instance Command: POST
@@ -135,18 +104,25 @@ public interface RestApplicationManager {
 	 * 
 	 * @param appid
 	 *            The application's ID
-	 * @param versionid
-	 *            The application version's ID
-	 * @param instanceId
-	 *            The application instance's ID
 	 * @return \\TODO
 	 */
 
 	@POST
-	@Path("{appId}/version/{versionId}/instance/{instanceId}/action/stop")
-	Response stopApplicationVersionInstance(@PathParam("appId") String appid,
-			@PathParam("versionId") String versionid,
-			@PathParam("instanceId") String instanceid);
+	@Path("{appId}/stop")
+	Response stopApplication(@PathParam("appId") String appid);
+	
+	/**
+	 * Restart an application Command: POST
+	 * /app/{appId}/restart
+	 * 
+	 * @param appid
+	 *            The application's ID
+	 * @return \\TODO
+	 */
+
+	@POST
+	@Path("{appId}/restart")
+	Response restartApplication(@PathParam("appId") String appid);
 
 	/**
 	 * Describe application. Command: GET /app/{appId}
@@ -186,4 +162,39 @@ public interface RestApplicationManager {
 	@Path("delete")
 	@Produces("application/xml")
 	Response deleteApplications();
+	
+	/**
+	 * Deploys an application instance on an available environment <br>
+	 * Command: POST
+	 * /environment/{envId}/action/deploy/app/{appId}/version/{versionId
+	 * }/instance/{instanceId}
+	 * 
+	 * @param envid
+	 *            The environment's ID.
+	 * @param appid
+	 *            The application's ID.
+	 */
+	@POST
+	@Path("{appId}/action/deploy/env/{envId}")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Produces("application/xml")
+	Response deployApplication(
+			@PathParam("appId") String appid, @PathParam("envId") String envid,
+			@FormDataParam("file") InputStream uploadedInputStream);
+
+	/**
+	 * Undeploys an application instance on an available environment <br>
+	 * Command: DELETE
+	 * /environment/{envId}/action/undeploy/app/{appId}/version/{
+	 * versionId}/instance/{instanceId}
+	 * 
+	 * @param envid
+	 *            The environment's ID.
+	 * @param appid
+	 *            The application's ID.
+	 */
+	@POST
+	@Path("/{appId}/action/undeploy/env/{envId}")
+	Response undeployApplication(
+			@PathParam("envId") String envid, @PathParam("appId") String appid);
 }

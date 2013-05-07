@@ -23,38 +23,43 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlRootElement(name = "deployable")
 @XmlAccessorType(XmlAccessType.FIELD)
 public class DeployableXML {
-	
+
 	@XmlAttribute
 	private String deployableName;
-	
+
 	@XmlAttribute
 	private String deployableType;
-	
+
 	@XmlAttribute
 	private String deployableDirectory;
-	
-	
+
 	public String getDeployableName() {
 		return deployableName;
 	}
+
 	public void setDeployableName(String deployableName) {
 		this.deployableName = deployableName;
 	}
+
 	public String getDeployableType() {
 		return deployableType;
 	}
+
 	public void setDeployableType(String deployableType) {
 		this.deployableType = deployableType;
 	}
+
 	public String getDeployableDirectory() {
 		return deployableDirectory;
 	}
+
 	public void setDeployableDirectory(String deployableDirectory) {
 		this.deployableDirectory = deployableDirectory;
 	}
-	
-	/*deployableName -->paas_deployable name="war"
-	Deployable Type --> content_type
-	DeployableDirectory --> Location*/
+
+	/*
+	 * deployableName -->paas_deployable name="war" Deployable Type -->
+	 * content_type DeployableDirectory --> Location
+	 */
 
 }

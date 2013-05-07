@@ -17,10 +17,9 @@ package telecom.sudparis.eu.paas.core.server.environments.pool;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import telecom.sudparis.eu.paas.core.server.xml.EnvironmentXML;
-
+import telecom.sudparis.eu.paas.core.server.xml.EnvironmentXML.LinksList;
 
 /**
  * @author sellami
@@ -31,7 +30,7 @@ public enum EnvironmentPool {
 	INSTANCE;
 
 	private List<EnvironmentXML> envList = new ArrayList<EnvironmentXML>();
-	private int NextID=1;
+	private int NextID = 1;
 
 	public List<EnvironmentXML> getEnvList() {
 		return envList;
@@ -41,20 +40,21 @@ public enum EnvironmentPool {
 		envList.add(env);
 		NextID++;
 	}
-	
+
 	/**
 	 * 
 	 * @param env
-	 * 		the environment to delete
+	 *            the environment to delete
 	 * @return 0 if the env was not found, 1 if the env was deleted
 	 */
 	public boolean delete(String envId) {
 		if (envList == null || envList.size() == 0) {
-			System.out.println("[EnvironmentPool]: the Environment list is empty!");
+			System.out
+					.println("[EnvironmentPool]: the Environment list is empty!");
 			return false;
 		} else {
 			for (EnvironmentXML env : envList) {
-				if (env.getEnvId().equals(envId)){
+				if (env.getEnvId().equals(envId)) {
 					envList.remove(env);
 					return true;
 				}
@@ -66,7 +66,8 @@ public enum EnvironmentPool {
 
 	public EnvironmentXML getEnv(String envId) {
 		if (envList == null || envList.size() == 0) {
-			System.out.println("[EnvironmentPool]: the Environment list is empty!");
+			System.out
+					.println("[EnvironmentPool]: the Environment list is empty!");
 			return null;
 		} else {
 			for (EnvironmentXML env : envList) {
@@ -77,10 +78,11 @@ public enum EnvironmentPool {
 		// The specified env was not found
 		return null;
 	}
-	
+
 	public EnvironmentXML getEnvByName(String envName) {
 		if (envList == null || envList.size() == 0) {
-			System.out.println("[EnvironmentPool]: the Environment list is empty!");
+			System.out
+					.println("[EnvironmentPool]: the Environment list is empty!");
 			return null;
 		} else {
 			for (EnvironmentXML env : envList) {
@@ -91,12 +93,12 @@ public enum EnvironmentPool {
 		// The specified env was not found
 		return null;
 	}
-	
-	public void updateEnv(String envId, Map<String, String> linksList){
-		EnvironmentXML env=getEnv(envId);
+
+	public void updateEnv(String envId, LinksList linksList) {
+		EnvironmentXML env = getEnv(envId);
 		envList.remove(env);
 		env.setLinksList(linksList);
-		envList.add(env);		
+		envList.add(env);
 	}
 
 	public int getNextID() {
@@ -107,4 +109,3 @@ public enum EnvironmentPool {
 		this.NextID = size;
 	}
 }
-

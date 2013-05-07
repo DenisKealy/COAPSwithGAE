@@ -8,7 +8,6 @@
 	</parent>
 	<groupId>CF-api-Web</groupId>
 	<artifactId>CF-api-Web</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
 	<packaging>war</packaging>
 	<name>Cloud Foundry REST API</name>
 	

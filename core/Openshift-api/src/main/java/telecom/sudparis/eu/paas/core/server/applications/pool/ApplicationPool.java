@@ -17,9 +17,9 @@ package telecom.sudparis.eu.paas.core.server.applications.pool;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import telecom.sudparis.eu.paas.core.server.xml.ApplicationXML;
+import telecom.sudparis.eu.paas.core.server.xml.DeployableXML;
 
 /**
  * @author sellami
@@ -30,7 +30,7 @@ public enum ApplicationPool {
 	INSTANCE;
 
 	private List<ApplicationXML> appList = new ArrayList<ApplicationXML>();
-	private int NextID=1;
+	private int NextID = 1;
 
 	public List<ApplicationXML> getAppList() {
 		return appList;
@@ -40,21 +40,20 @@ public enum ApplicationPool {
 		appList.add(app);
 		setNextID(getNextID() + 1);
 	}
-	
+
 	public void remove(ApplicationXML app) {
 		appList.remove(app);
 	}
-	
+
 	public void removeAll() {
-		for(ApplicationXML app:appList)
-			appList.remove(app);
-				setNextID(1);
+		appList.removeAll(appList);
+		setNextID(1);
 	}
-	
 
 	public ApplicationXML getApp(String appId) {
 		if (appList == null || appList.size() == 0) {
-			System.out.println("[ApplicationPool]: the Application list is empty!");
+			System.out
+					.println("[ApplicationPool]: the Application list is empty!");
 			return null;
 		} else {
 			for (ApplicationXML app : appList) {
@@ -65,38 +64,17 @@ public enum ApplicationPool {
 		// The specified app was not found
 		return null;
 	}
-	
-//	public void updateApp(String appId,Deployable dep){
-//		ApplicationXML app=getApp(appId);
-//		appList.remove(app);
-//		app.setDeployable(dep);
-//		appList.add(app);	
-//	}
-//	
-//	public void updateApp(String appId,int nbInstances){
-//		ApplicationXML app=getApp(appId);
-//		appList.remove(app);
-//		app.setNbInstances(nbInstances);
-//		appList.add(app);	
-//	}
-//	
-//	public void updateApp(String appId,List<VersionInstance> vi){
-//		ApplicationXML app=getApp(appId);
-//		appList.remove(app);
-//		app.setVersionInstances(vi);
-//		appList.add(app);
-//	}
-//	
-//	public void updateApp(String appId, Map<String, String> linksList){
-//		ApplicationXML app=getApp(appId);
-//		appList.remove(app);
-//		app.setLinksList(linksList);
-//		appList.add(app);	
-//	}
-	
-	public void updateApp(String appId, ApplicationXML newApp){
+
+	public void updateApp(String appId, ApplicationXML newApp) {
 		appList.remove(getApp(appId));
-		appList.add(newApp);		
+		appList.add(newApp);
+	}
+	
+	public void updateApp(String appId,DeployableXML dep){
+		ApplicationXML app=getApp(appId);
+		appList.remove(app);
+		app.setDeployable(dep);
+		appList.add(app);	
 	}
 
 	public int getNextID() {
@@ -108,4 +86,3 @@ public enum ApplicationPool {
 	}
 
 }
-

@@ -15,14 +15,15 @@
  ******************************************************************************/
 package telecom.sudparis.eu.paas.core.server.xml;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 
 /**
  * Environment XML element
@@ -49,26 +50,24 @@ public class EnvironmentXML {
 	 */
 	@XmlAttribute
 	private String envDesc;
-	
+
 	/**
 	 * The container Names
 	 */
 	@XmlElement
 	private List<String> containerNames;
-	
+
 	/**
 	 * The cartridge Names
 	 */
 	@XmlElement
 	private List<String> cartridgeNames;
-	
-	
+
 	/**
 	 * List of the provided Links for the Environment
 	 */
 	@XmlElement
-	private Map<String, String> linksList;
-
+	private EnvironmentXML.LinksList linksList;
 
 	/**
 	 * @return the containerNames
@@ -78,7 +77,8 @@ public class EnvironmentXML {
 	}
 
 	/**
-	 * @param containerNames the containerNames to set
+	 * @param containerNames
+	 *            the containerNames to set
 	 */
 	public void setContainerNames(List<String> containerNames) {
 		this.containerNames = containerNames;
@@ -92,24 +92,11 @@ public class EnvironmentXML {
 	}
 
 	/**
-	 * @param cartridgeNames the cartridgeNames to set
+	 * @param cartridgeNames
+	 *            the cartridgeNames to set
 	 */
 	public void setCartridgeNames(List<String> cartridgeNames) {
 		this.cartridgeNames = cartridgeNames;
-	}
-
-	/**
-	 * @return the linksList
-	 */
-	public Map<String, String> getLinksList() {
-		return linksList;
-	}
-
-	/**
-	 * @param linksList the linksList to set
-	 */
-	public void setLinksList(Map<String, String> linksList) {
-		this.linksList = linksList;
 	}
 
 	/**
@@ -143,7 +130,116 @@ public class EnvironmentXML {
 		this.envDesc = envDesc;
 	}
 
+	/**
+	 * Gets the value of the linksList property.
+	 * 
+	 * @return possible object is {@link Application.LinksList }
+	 * 
+	 */
+	public EnvironmentXML.LinksList getLinksList() {
+		return linksList;
+	}
 
+	/**
+	 * Sets the value of the linksList property.
+	 * 
+	 * @param value
+	 *            allowed object is {@link Application.LinksList }
+	 * 
+	 */
+	public void setLinksList(EnvironmentXML.LinksList value) {
+		this.linksList = value;
+	}
 
+	@XmlAccessorType(XmlAccessType.FIELD)
+	@XmlType(name = "")
+	public static class LinksList {
 
+		@XmlElement
+		protected List<EnvironmentXML.LinksList.Link> link;
+
+		public List<EnvironmentXML.LinksList.Link> getLink() {
+			if (link == null) {
+				link = new ArrayList<EnvironmentXML.LinksList.Link>();
+			}
+			return this.link;
+		}
+
+		@XmlAccessorType(XmlAccessType.FIELD)
+		@XmlType(name = "")
+		public static class Link {
+
+			@XmlAttribute
+			protected String label;
+			@XmlAttribute
+			protected String action;
+			@XmlAttribute
+			protected String href;
+
+			/**
+			 * Gets the value of the label property.
+			 * 
+			 * @return possible object is {@link String }
+			 * 
+			 */
+			public String getLabel() {
+				return label;
+			}
+
+			/**
+			 * Sets the value of the label property.
+			 * 
+			 * @param value
+			 *            allowed object is {@link String }
+			 * 
+			 */
+			public void setLabel(String value) {
+				this.label = value;
+			}
+
+			/**
+			 * Gets the value of the action property.
+			 * 
+			 * @return possible object is {@link String }
+			 * 
+			 */
+			public String getAction() {
+				return action;
+			}
+
+			/**
+			 * Sets the value of the action property.
+			 * 
+			 * @param value
+			 *            allowed object is {@link String }
+			 * 
+			 */
+			public void setAction(String value) {
+				this.action = value;
+			}
+
+			/**
+			 * Gets the value of the href property.
+			 * 
+			 * @return possible object is {@link String }
+			 * 
+			 */
+			public String getHref() {
+				return href;
+			}
+
+			/**
+			 * Sets the value of the href property.
+			 * 
+			 * @param value
+			 *            allowed object is {@link String }
+			 * 
+			 */
+			public void setHref(String value) {
+				this.href = value;
+			}
+
+		}
+
+	}
 }

@@ -16,20 +16,20 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for paas_applicationType complex type.
+ * <p>Java class for paas_application_manifestType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="paas_applicationType">
+ * &lt;complexType name="paas_application_manifestType">
  *   &lt;complexContent>
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType">
  *       &lt;sequence>
  *         &lt;element name="description" type="{http://www.w3.org/2001/XMLSchema}string"/>
- *         &lt;element name="paas_application_version" type="{}paas_application_versionType"/>
+ *         &lt;element name="paas_application" type="{}paas_applicationType"/>
+ *         &lt;element name="paas_environment" type="{}paas_environmentType"/>
  *       &lt;/sequence>
  *       &lt;attribute name="name" type="{http://www.w3.org/2001/XMLSchema}string" />
- *       &lt;attribute name="environement" type="{http://www.w3.org/2001/XMLSchema}string" />
  *     &lt;/restriction>
  *   &lt;/complexContent>
  * &lt;/complexType>
@@ -38,20 +38,21 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "paas_applicationType", propOrder = {
+@XmlType(name = "paas_application_manifestType", propOrder = {
     "description",
-    "paasApplicationVersion"
+    "paasApplication",
+    "paasEnvironment"
 })
-public class PaasApplicationType {
+public class PaasApplicationManifestType {
 
     @XmlElement(required = true)
     protected String description;
-    @XmlElement(name = "paas_application_version", required = true)
-    protected PaasApplicationVersionType paasApplicationVersion;
+    @XmlElement(name = "paas_application", required = true)
+    protected PaasApplicationType paasApplication;
+    @XmlElement(name = "paas_environment", required = true)
+    protected PaasEnvironmentType paasEnvironment;
     @XmlAttribute
     protected String name;
-    @XmlAttribute
-    protected String environement;
 
     /**
      * Gets the value of the description property.
@@ -78,27 +79,51 @@ public class PaasApplicationType {
     }
 
     /**
-     * Gets the value of the paasApplicationVersion property.
+     * Gets the value of the paasApplication property.
      * 
      * @return
      *     possible object is
-     *     {@link PaasApplicationVersionType }
+     *     {@link PaasApplicationType }
      *     
      */
-    public PaasApplicationVersionType getPaasApplicationVersion() {
-        return paasApplicationVersion;
+    public PaasApplicationType getPaasApplication() {
+        return paasApplication;
     }
 
     /**
-     * Sets the value of the paasApplicationVersion property.
+     * Sets the value of the paasApplication property.
      * 
      * @param value
      *     allowed object is
-     *     {@link PaasApplicationVersionType }
+     *     {@link PaasApplicationType }
      *     
      */
-    public void setPaasApplicationVersion(PaasApplicationVersionType value) {
-        this.paasApplicationVersion = value;
+    public void setPaasApplication(PaasApplicationType value) {
+        this.paasApplication = value;
+    }
+
+    /**
+     * Gets the value of the paasEnvironment property.
+     * 
+     * @return
+     *     possible object is
+     *     {@link PaasEnvironmentType }
+     *     
+     */
+    public PaasEnvironmentType getPaasEnvironment() {
+        return paasEnvironment;
+    }
+
+    /**
+     * Sets the value of the paasEnvironment property.
+     * 
+     * @param value
+     *     allowed object is
+     *     {@link PaasEnvironmentType }
+     *     
+     */
+    public void setPaasEnvironment(PaasEnvironmentType value) {
+        this.paasEnvironment = value;
     }
 
     /**
@@ -123,30 +148,6 @@ public class PaasApplicationType {
      */
     public void setName(String value) {
         this.name = value;
-    }
-
-    /**
-     * Gets the value of the environement property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
-     */
-    public String getEnvironement() {
-        return environement;
-    }
-
-    /**
-     * Sets the value of the environement property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
-     */
-    public void setEnvironement(String value) {
-        this.environement = value;
     }
 
 }

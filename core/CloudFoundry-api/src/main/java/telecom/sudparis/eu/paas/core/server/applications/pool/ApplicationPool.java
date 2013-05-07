@@ -17,7 +17,8 @@ package telecom.sudparis.eu.paas.core.server.applications.pool;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import telecom.sudparis.eu.paas.core.server.applications.pool.Application.LinksList;
+
 
 /**
  * @author sellami
@@ -44,9 +45,8 @@ public enum ApplicationPool {
 	}
 	
 	public void removeAll() {
-		for(Application app:appList)
-			appList.remove(app);
-				setNextID(1);
+		appList.removeAll(appList);
+		setNextID(1);
 	}
 	
 
@@ -78,14 +78,14 @@ public enum ApplicationPool {
 		appList.add(app);	
 	}
 	
-	public void updateApp(String appId,List<VersionInstance> vi){
+	/*public void updateApp(String appId,List<VersionInstance> vi){
 		Application app=getApp(appId);
 		appList.remove(app);
 		app.setVersionInstances(vi);
 		appList.add(app);
-	}
+	}*/
 	
-	public void updateApp(String appId, Map<String, String> linksList){
+	public void updateApp(String appId, LinksList linksList){
 		Application app=getApp(appId);
 		appList.remove(app);
 		app.setLinksList(linksList);
