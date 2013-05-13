@@ -13,8 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package telecom.sudparis.eu.paas.core.server.xml;
+package telecom.sudparis.eu.paas.core.server.ressources.manager.provider;
 
-public class MapEntry {
+import javax.ws.rs.ext.Provider;
 
+import com.sun.jersey.api.model.AbstractResourceModelContext;
+import com.sun.jersey.api.model.AbstractResourceModelListener;
+
+@Provider
+public class Listener implements AbstractResourceModelListener {
+
+	static final String ccUrl = System.getProperty("vcap.target",
+			"https://api.cloudfoundry.com");
+
+	static final String TEST_USER_EMAIL = System.getProperty("vcap.email",
+			"mohamed.mohamed@it-sudparis.eu");
+
+	static final String TEST_USER_PASS = System.getProperty("vcap.passwd",
+			"budfSzrq");
+
+	@Override
+	public void onLoaded(AbstractResourceModelContext modelContext) {
+		System.out.println("##### resource model initiated");
+	}
 }

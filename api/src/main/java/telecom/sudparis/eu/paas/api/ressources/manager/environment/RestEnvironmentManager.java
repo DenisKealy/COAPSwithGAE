@@ -45,7 +45,7 @@ public interface RestEnvironmentManager {
 	
 	/**
 	 * Updates an existing environment <br>
-	 * Command: POST /environment/
+	 * Command: POST /environment/{envId}/update
 	 * 
 	 * @param environmentTemplateDescriptor
 	 *            An environment template descriptor must be provided.
@@ -53,7 +53,7 @@ public interface RestEnvironmentManager {
 	 *         element will be added to the descriptor
 	 */
 	@POST
-	@Path("{envId}")
+	@Path("{envId}/update")
 	@Consumes(MediaType.APPLICATION_XML)
 	@Produces(MediaType.APPLICATION_XML)
 	Response updateEnvironment(@PathParam("envId") String envid,String environmentTemplateDescriptor);
@@ -67,6 +67,7 @@ public interface RestEnvironmentManager {
 	 */
 	@DELETE
 	@Path("{envId}")
+	@Produces(MediaType.APPLICATION_XML)
 	Response deleteEnvironment(@PathParam("envId") String envid);
 
 	/**
@@ -89,6 +90,7 @@ public interface RestEnvironmentManager {
 	 */
 	@GET
 	@Path("{envId}")
+	@Produces(MediaType.APPLICATION_XML)
 	Response getEnvironment(@PathParam("envId") String envid);
 
 	/**
@@ -100,7 +102,8 @@ public interface RestEnvironmentManager {
 	 * @return a list of application version instances in the environment envid
 	 */
 	@GET
-	@Path("{envId}/app/")
+	@Path("{envId}/app")
+	@Produces(MediaType.APPLICATION_XML)
 	Response getDeployedApplications(
 			@PathParam("envId") String envid);
 	
@@ -111,7 +114,8 @@ public interface RestEnvironmentManager {
 	 * @return a list of runtimes, frameworks and services supported by the targeted PaaS
 	 */
 	@GET
-	@Path("info/")
+	@Path("info")
+	@Produces(MediaType.APPLICATION_XML)
 	Response getInformations();
 
 }

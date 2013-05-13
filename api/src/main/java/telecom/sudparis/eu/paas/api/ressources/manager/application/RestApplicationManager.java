@@ -42,26 +42,11 @@ public interface RestApplicationManager {
 	 *         The appID and Link element will be added to the Manifest.
 	 */
 	@POST
-	@Consumes("application/xml")
-	@Produces("application/xml")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
 	Response createApplication(String cloudApplicationDescriptor);
 	
-	
-//	/**
-//	 * Uploads a file. Used for the application deployable files uplaod 
-//	 * Command: POST /app/upload
-//	 * 
-//	 * @param file
-//	 *            The file to upload.
-//	 * @return 
-//	 */
-//	@POST
-//	@Path("{appId}/upload")
-//	@Consumes(MediaType.MULTIPART_FORM_DATA)
-//	Response upoadFile(@PathParam("appId") String appid,
-//			@FormDataParam("file") InputStream uploadedInputStream,
-//			@FormDataParam("file") FormDataContentDisposition fileDetail);
-	
+
 	
 	/**
 	 * Updates an existing application. Command: POST /app/{appId}/update
@@ -73,8 +58,8 @@ public interface RestApplicationManager {
 	 */
 	@POST
 	@Path("{appId}/update")
-	@Consumes("application/xml")
-	@Produces("application/xml")
+	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
 	Response updateApplication(@PathParam("appId") String appid,String cloudApplicationDescriptor);
 
 	/**
@@ -83,6 +68,7 @@ public interface RestApplicationManager {
 	 * @return A List of available applications
 	 */
 	@GET
+	@Produces(MediaType.APPLICATION_XML)
 	Response findApplications();
 
 	/**
@@ -96,6 +82,7 @@ public interface RestApplicationManager {
 
 	@POST
 	@Path("{appId}/start")
+	@Produces(MediaType.APPLICATION_XML)
 	Response startApplication(@PathParam("appId") String appid);
 
 	/**
@@ -109,6 +96,7 @@ public interface RestApplicationManager {
 
 	@POST
 	@Path("{appId}/stop")
+	@Produces(MediaType.APPLICATION_XML)
 	Response stopApplication(@PathParam("appId") String appid);
 	
 	/**
@@ -122,6 +110,7 @@ public interface RestApplicationManager {
 
 	@POST
 	@Path("{appId}/restart")
+	@Produces(MediaType.APPLICATION_XML)
 	Response restartApplication(@PathParam("appId") String appid);
 
 	/**
@@ -134,7 +123,7 @@ public interface RestApplicationManager {
 
 	@GET
 	@Path("{appId}")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	Response describeApplication(@PathParam("appId") String appId);
 
 	/**
@@ -148,7 +137,7 @@ public interface RestApplicationManager {
 
 	@DELETE
 	@Path("{appId}/delete")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	Response deleteApplication(@PathParam("appId") String appId);
 
 	/**
@@ -160,7 +149,7 @@ public interface RestApplicationManager {
 
 	@DELETE
 	@Path("delete")
-	@Produces("application/xml")
+	@Produces(MediaType.APPLICATION_XML)
 	Response deleteApplications();
 	
 	/**
@@ -176,12 +165,13 @@ public interface RestApplicationManager {
 	 */
 	@POST
 	@Path("{appId}/action/deploy/env/{envId}")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Produces("application/xml")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)	
+	@Produces(MediaType.APPLICATION_XML)
 	Response deployApplication(
 			@PathParam("appId") String appid, @PathParam("envId") String envid,
 			@FormDataParam("file") InputStream uploadedInputStream);
-
+	
+	
 	/**
 	 * Undeploys an application instance on an available environment <br>
 	 * Command: DELETE
@@ -195,6 +185,7 @@ public interface RestApplicationManager {
 	 */
 	@POST
 	@Path("/{appId}/action/undeploy/env/{envId}")
+	@Produces(MediaType.APPLICATION_XML)
 	Response undeployApplication(
 			@PathParam("envId") String envid, @PathParam("appId") String appid);
 }

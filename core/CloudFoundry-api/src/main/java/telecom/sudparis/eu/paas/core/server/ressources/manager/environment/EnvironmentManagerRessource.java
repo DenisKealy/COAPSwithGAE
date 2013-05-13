@@ -34,14 +34,17 @@ import javax.xml.transform.stream.StreamSource;
 import org.cloudfoundry.client.lib.domain.Staging;
 
 import telecom.sudparis.eu.paas.api.ressources.manager.environment.RestEnvironmentManager;
-import telecom.sudparis.eu.paas.core.server.environments.pool.Environment;
-import telecom.sudparis.eu.paas.core.server.environments.pool.Environment.LinksList;
-import telecom.sudparis.eu.paas.core.server.environments.pool.Environment.LinksList.Link;
-import telecom.sudparis.eu.paas.core.server.environments.pool.EnvironmentPool;
+import telecom.sudparis.eu.paas.core.server.pool.environment.EnvironmentPool;
 import telecom.sudparis.eu.paas.core.server.ressources.exception.NotSupportedException;
+import telecom.sudparis.eu.paas.core.server.ressources.util.EnvironmentLinkGenerator;
 import telecom.sudparis.eu.paas.core.server.xml.Error;
+import telecom.sudparis.eu.paas.core.server.xml.LinksListType;
 import telecom.sudparis.eu.paas.core.server.xml.OperationResponse;
-import telecom.sudparis.eu.paas.core.server.xml.StagingXML;
+import telecom.sudparis.eu.paas.core.server.xml.environment.ConfigurationType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.EntryType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.EnvironmentType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.list.EnvironmentsType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.list.SimpleEnvironmentType;
 import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationManifestType;
 import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasEnvironmentNodeType;
 
@@ -60,13 +63,10 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	private static ResourceBundle rb = ResourceBundle
 			.getBundle("telecom.sudparis.eu.paas.core.server.ressources.credentials");
 
-
 	/**
 	 * The public CF-PaaS API URL
 	 */
 	private static String apiUrl = rb.getString("api.public.url");
-
-
 
 	/**
 	 * An element to display The response
@@ -116,17 +116,15 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 					e.printStackTrace();
 				}
 				// retrieve envName
-				String envName = manifest.getPaasEnvironment()
-						.getName();
-				
+				String envName = manifest.getPaasEnvironment().getName();
+
 				// retrieve memory
-				long envMemory = Long.parseLong(manifest.getPaasEnvironment().getPaasEnvironmentTemplate().getMemory());
+				long envMemory = manifest.getPaasEnvironment()
+						.getPaasEnvironmentTemplate().getMemory();
 
 				// retrieve envDescription
 				String envDescription = manifest.getPaasEnvironment()
 						.getPaasEnvironmentTemplate().getDescription();
-
-				// retrieve staging.
 
 				// We suppose that we associate the runtime java and the
 				// framework "java_web" to the container tomcat
@@ -136,8 +134,9 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 				// containerNames.add("tomcat");// we consider only one
 				// container
 				List<String> serviceNames = new ArrayList<String>();
-				List<PaasEnvironmentNodeType> lstNodes = manifest.getPaasEnvironment()
-						.getPaasEnvironmentTemplate().getPaasEnvironmentNode();
+				List<PaasEnvironmentNodeType> lstNodes = manifest
+						.getPaasEnvironment().getPaasEnvironmentTemplate()
+						.getPaasEnvironmentNode();
 
 				for (PaasEnvironmentNodeType node : lstNodes) {
 					// If no container was specified in the Environment
@@ -147,68 +146,118 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 						containerVersions.add(node.getVersion());
 					} else if (node.getContentType().equals("database"))
 						serviceNames.add(node.getName());
-				}	
-
+				}
 
 				// TODO this value may be useful when handling several
 				// containers
 				int containerIndex = 0;
-				//the default value of staging
-				Staging s=new Staging(JAVA6, JAVA_WEB);
+				// the default value of staging
+				Staging s = new Staging(JAVA6, JAVA_WEB);
 				s.setCommand("no");
 				for (String cName : containerNames) {
 					if (cName.equals("tomcat")) {
 						if (containerVersions.get(containerIndex).startsWith(
 								"6")) {
-							s=new Staging(JAVA6, JAVA_WEB);
+							s = new Staging(JAVA6, JAVA_WEB);
 							s.setCommand("no");
-							//staging.put("runtime", JAVA6);
+							// staging.put("runtime", JAVA6);
 						} else if (containerVersions.get(containerIndex)
 								.startsWith("7")) {
-							s=new Staging(JAVA7, JAVA_WEB);
+							s = new Staging(JAVA7, JAVA_WEB);
 							s.setCommand("no");
-							//staging.put("runtime", JAVA7);
+							// staging.put("runtime", JAVA7);
 						}
-						//staging.put("framework", JAVA_WEB);
-						
+						// staging.put("framework", JAVA_WEB);
+
 					} else if (cName.equals("spring")) {
-						s=new Staging(JAVA6, SPRING_WEB);
+						s = new Staging(JAVA6, SPRING_WEB);
 						s.setCommand("no");
-						//staging.put("runtime", JAVA6);
-						//staging.put("framework", SPRING_WEB);
-						//staging.put("command", "no");
+						// staging.put("runtime", JAVA6);
+						// staging.put("framework", SPRING_WEB);
+						// staging.put("command", "no");
 					} else if (cName.equals("node.js")) {
-						s=new Staging(NODE, NODE);
+						s = new Staging(NODE, NODE);
 						s.setCommand("no");
-						//staging.put("runtime", NODE);
-						//staging.put("framework", NODE);
-						//staging.put("command", "no");
+						// staging.put("runtime", NODE);
+						// staging.put("framework", NODE);
+						// staging.put("command", "no");
 					}
 					containerIndex++;
 				}
-				StagingXML staging = new StagingXML(s);
+
+				// retrieve the environment configuration (previously called
+				// staging)
+				// the different configuration elements will be saved in a
+				// ConfigurationType element
+				ConfigurationType conf = new ConfigurationType();
+
+				// get the runtime
+				EntryType runtime = new EntryType();
+				runtime.setKey("runtime");
+				runtime.setValue(s.getRuntime());
+				conf.getEntry().add(runtime);
+
+				// get the framework
+				EntryType framework = new EntryType();
+				framework.setKey("framework");
+				framework.setValue(s.getFramework());
+				conf.getEntry().add(framework);
+
+				// get the command
+				EntryType command = new EntryType();
+				command.setKey("command");
+				command.setValue(s.getCommand());
+				conf.getEntry().add(command);
+
+				// get the service Names
+				for (String service : serviceNames) {
+					EntryType e = new EntryType();
+					e.setKey("service");
+					e.setValue(service);
+					conf.getEntry().add(e);
+				}
+
+				// StagingXML staging = new StagingXML(s);
 
 				// generate envID
 				Long id = getNextId();
 
-				Environment env = new Environment();
-				env.setEnvId(Long.toString(id));
+				EnvironmentType env = new EnvironmentType();
+				env.setEnvId((int) (long) id);
+				// env.setEnvId(Long.toString(id));
 				env.setEnvName(envName);
 				env.setEnvDesc(envDescription);
-				env.setStaging(staging);
-				env.setServiceNames(serviceNames);
-				env.setEnvMemory(envMemory);
+				env.setConfiguration(conf);
+				// env.setStaging(staging);
+				// env.setServiceNames(serviceNames);
+				env.setEnvMemory((int) (long) envMemory);
 
-				// add the delete and get environment links
-				LinksList linksList = new LinksList();
-				linksList = addGetEnvLink(linksList, Long.toString(id));
-				linksList = addDeleteEnvLink(linksList, Long.toString(id));
+				// add the environment STATE and hplinks links
+				LinksListType linksList = new LinksListType();
+				linksList = EnvironmentLinkGenerator.addGetEnvLink(linksList,
+						Long.toString(id), apiUrl);
+				linksList = EnvironmentLinkGenerator.addGetDeployedAppLink(
+						linksList, Long.toString(id), apiUrl);
+				linksList = EnvironmentLinkGenerator.addGetEnvLink(linksList,
+						Long.toString(id), apiUrl);
+				linksList = EnvironmentLinkGenerator.addGetEnvsLink(linksList,
+						apiUrl);
+				linksList = EnvironmentLinkGenerator.addGetInfoLink(linksList,
+						apiUrl);
+				linksList = EnvironmentLinkGenerator.addnewEnvLink(linksList,
+						apiUrl);
+
+				linksList = EnvironmentLinkGenerator.addDestroyEnvLink(
+						linksList, Long.toString(id), apiUrl);
+				linksList = EnvironmentLinkGenerator.addUpdateEnvLink(
+						linksList, Long.toString(id), apiUrl);
+
 				env.setLinksList(linksList);
 
 				EnvironmentPool.INSTANCE.add(env);
 
 				return Response.status(Response.Status.OK)
-						.entity(new GenericEntity<Environment>(env) {
+						.entity(new GenericEntity<EnvironmentType>(env) {
 						}).type(MediaType.APPLICATION_XML_TYPE).build();
 
 			} else {
@@ -257,10 +306,13 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 
 	@Override
 	public Response findEnvironments() {
-		List<Environment> envList = EnvironmentPool.INSTANCE.getEnvList();
+		List<SimpleEnvironmentType> envList = formatEnvList(EnvironmentPool.INSTANCE.getEnvList());
+		EnvironmentsType envs=new EnvironmentsType();
+		envs.setEnvironment(envList);
+		
 		if (envList != null) {
 			return Response.status(Response.Status.OK)
-					.entity(new GenericEntity<List<Environment>>(envList) {
+					.entity(new GenericEntity<EnvironmentsType>(envs) {
 					}).type(MediaType.APPLICATION_XML_TYPE).build();
 		} else {
 			System.out.println("Failed to retrieve the environments list.");
@@ -273,10 +325,10 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	@Override
 	public Response getEnvironment(String envid) {
 		try {
-			Environment env = EnvironmentPool.INSTANCE.getEnv(envid);
+			EnvironmentType env = EnvironmentPool.INSTANCE.getEnv(envid);
 			if (env != null) {
 				return Response.status(Response.Status.OK)
-						.entity(new GenericEntity<Environment>(env) {
+						.entity(new GenericEntity<EnvironmentType>(env) {
 						}).type(MediaType.APPLICATION_XML_TYPE).build();
 			} else {
 				System.out.println("Failed to find the cloud Environment "
@@ -299,49 +351,39 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	@Override
 	public Response updateEnvironment(String envid,
 			String environmentTemplateDescriptor) {
-		throw new NotSupportedException("The updateEnvironment is not yet implemented.");
+		throw new NotSupportedException(
+				"The updateEnvironment is not yet implemented.");
 	}
 
 	@Override
 	public Response getDeployedApplications(String envid) {
-		throw new NotSupportedException("The getDeployedApplications is not yet implemented.");
+		throw new NotSupportedException(
+				"The getDeployedApplications is not yet implemented.");
 	}
-	
+
 	@Override
 	public Response getInformations() {
-		throw new NotSupportedException("The getInformations is not yet implemented.");
+		throw new NotSupportedException(
+				"The getInformations is not yet implemented.");
 	}
 
 	// private methods
 	private synchronized Long getNextId() {
 		return new Long(EnvironmentPool.INSTANCE.getNextID());
 	}
-
-	private LinksList addDeleteEnvLink(LinksList linksList, String envId) {
-		String url = formatApiURL(apiUrl) + "environment/" + envId;
-		Link deleteEnvLink = new Link();
-		deleteEnvLink.setAction("DELETE");
-		deleteEnvLink.setLabel("deleteEnvironment()");
-		deleteEnvLink.setHref(url);
-		linksList.getLink().add(deleteEnvLink);
-		return linksList;
-	}
-
-	private LinksList addGetEnvLink(LinksList linksList, String envId) {
-		String url = formatApiURL(apiUrl) + "environment/" + envId;
-		Link getEnvLink = new Link();
-		getEnvLink.setAction("GET");
-		getEnvLink.setLabel("getEnvironment()");
-		getEnvLink.setHref(url);
-		linksList.getLink().add(getEnvLink);
-		return linksList;
-	}
-
-	private String formatApiURL(String apiUrl) {
-		apiUrl = apiUrl.trim();
-		if (!apiUrl.endsWith("/"))
-			apiUrl = apiUrl + "/";
-		return apiUrl;
+	
+	private List<SimpleEnvironmentType> formatEnvList(List<EnvironmentType> envList) {
+		List<SimpleEnvironmentType> listEnvType=new ArrayList<SimpleEnvironmentType>();
+		for (EnvironmentType e:envList){
+			SimpleEnvironmentType envType=new SimpleEnvironmentType();
+			envType.setDescription(e.getEnvDesc());
+			envType.setId(e.getEnvId());
+			envType.setName(e.getEnvName());
+			envType.setUri(EnvironmentLinkGenerator.formatApiURL(apiUrl) + "environment/" + e.getEnvId());
+			listEnvType.add(envType);
+			 
+		}
+		return listEnvType;
 	}
 
 }

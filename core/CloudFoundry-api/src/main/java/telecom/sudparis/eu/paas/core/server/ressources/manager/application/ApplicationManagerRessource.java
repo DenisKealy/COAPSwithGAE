@@ -17,10 +17,8 @@ package telecom.sudparis.eu.paas.core.server.ressources.manager.application;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -51,19 +49,29 @@ import org.cloudfoundry.client.lib.domain.Staging;
 import org.springframework.web.client.HttpServerErrorException;
 
 import telecom.sudparis.eu.paas.api.ressources.manager.application.RestApplicationManager;
-import telecom.sudparis.eu.paas.core.server.applications.pool.Application;
-import telecom.sudparis.eu.paas.core.server.applications.pool.Application.LinksList;
-import telecom.sudparis.eu.paas.core.server.applications.pool.Application.LinksList.Link;
-import telecom.sudparis.eu.paas.core.server.applications.pool.ApplicationPool;
-import telecom.sudparis.eu.paas.core.server.applications.pool.Deployable;
-import telecom.sudparis.eu.paas.core.server.applications.pool.VersionInstance;
-import telecom.sudparis.eu.paas.core.server.environments.pool.Environment;
-import telecom.sudparis.eu.paas.core.server.environments.pool.EnvironmentPool;
+import telecom.sudparis.eu.paas.core.server.artifact.handling.AppObj;
+import telecom.sudparis.eu.paas.core.server.artifact.handling.AppProcessing;
+import telecom.sudparis.eu.paas.core.server.pool.application.ApplicationPool;
+import telecom.sudparis.eu.paas.core.server.pool.environment.EnvironmentPool;
 import telecom.sudparis.eu.paas.core.server.ressources.exception.NotSupportedException;
+import telecom.sudparis.eu.paas.core.server.ressources.util.ApplicationLinkGenerator;
+import telecom.sudparis.eu.paas.core.server.ressources.util.EnvironmentLinkGenerator;
+import telecom.sudparis.eu.paas.core.server.ressources.util.FileUtilities;
 import telecom.sudparis.eu.paas.core.server.xml.Error;
+import telecom.sudparis.eu.paas.core.server.xml.LinksListType;
 import telecom.sudparis.eu.paas.core.server.xml.OperationResponse;
-import telecom.sudparis.eu.paas.core.server.xml.RessourcesXML;
-import telecom.sudparis.eu.paas.core.server.xml.StagingXML;
+import telecom.sudparis.eu.paas.core.server.xml.application.ApplicationType;
+import telecom.sudparis.eu.paas.core.server.xml.application.DeployableType;
+import telecom.sudparis.eu.paas.core.server.xml.application.InstanceType;
+import telecom.sudparis.eu.paas.core.server.xml.application.InstancesType;
+import telecom.sudparis.eu.paas.core.server.xml.application.UrisType;
+import telecom.sudparis.eu.paas.core.server.xml.application.list.ApplicationsType;
+import telecom.sudparis.eu.paas.core.server.xml.application.list.SimpleApplicationType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.ConfigurationType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.EntryType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.EnvironmentType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.list.EnvironmentsType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.list.SimpleEnvironmentType;
 import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationManifestType;
 import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationVersionInstanceType;
 
@@ -79,32 +87,33 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	/**
 	 * ressource bundle to get the connexion credentials
 	 */
-	private static ResourceBundle rb = ResourceBundle.getBundle("telecom.sudparis.eu.paas.core.server.ressources.credentials");
-	
+	private static ResourceBundle rb = ResourceBundle
+			.getBundle("telecom.sudparis.eu.paas.core.server.ressources.credentials");
+
 	/**
 	 * The target cloud Foundry URL
 	 */
-	private static final String ccUrl=rb.getString("vcap.target");
-	
+	private static final String ccUrl = rb.getString("vcap.target");
+
 	/**
 	 * The public CF-PaaS API URL
 	 */
 	private static String apiUrl = rb.getString("api.public.url");
-	
+
 	/**
-	 * The CloudFoundry user mail 
+	 * The CloudFoundry user mail
 	 */
-	private static final String TEST_USER_EMAIL =rb.getString("vcap.email");
-	
+	private static final String TEST_USER_EMAIL = rb.getString("vcap.email");
+
 	/**
 	 * The CloudFoundry user password
 	 */
-	private static final String TEST_USER_PASS =rb.getString("vcap.passwd");
-	
+	private static final String TEST_USER_PASS = rb.getString("vcap.passwd");
+
 	/**
 	 * The HOST_NAME of the used paas
 	 */
-	private static final String HOST_NAME =rb.getString("host");
+	private static final String HOST_NAME = rb.getString("host");
 
 	/**
 	 * checks the existence of the application By default set to true
@@ -122,7 +131,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	private Error error = new Error();
 
 	private static boolean checkCFApplications = false;
-	
+
 	/**
 	 * The temp folder used to store uploaded files
 	 */
@@ -154,71 +163,97 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 					e.printStackTrace();
 				}
 				// create the application object
-				Application app = new Application();
+				ApplicationType app = new ApplicationType();
 				// retrieve appName
 				String appName = manifest.getPaasApplication().getName();
 				app.setAppName(appName);
-				
 
+				//retrieve app description
+				
+				String description=manifest.getPaasApplication().getDescription().toString();
+				app.setDescription(description);
+				
 				// retrieve uris
-				List<String> uris = new ArrayList<String>();
-				uris.add(appName + "." + HOST_NAME);
+				// List<String> uris = new ArrayList<String>();
+				// uris.add(appName + "." + HOST_NAME);
+				UrisType uris = new UrisType();
+				uris.getUri().add(appName + "." + HOST_NAME);
 				app.setUris(uris);
 
 				// generate appID
 				Long id = getNextId();
-				app.setAppId(Long.toString(id));
+				app.setAppId((int) (long) id);
 
 				// retrieve deployableName
-				String deployableName = manifest.getPaasApplication().getPaasApplicationVersion().getPaasApplicationDeployable()
-						.getName();
+				String deployableName = manifest.getPaasApplication()
+						.getPaasApplicationVersion()
+						.getPaasApplicationDeployable().getName();
 
 				// retrieve deployableType
 				String deployableType = manifest.getPaasApplication()
-						.getPaasApplicationVersion().getPaasApplicationDeployable()
-						.getContentType();
+						.getPaasApplicationVersion()
+						.getPaasApplicationDeployable().getContentType();
 
-				// retrieve deployableDirectory
+				// retrieve deployableDirectory or deployableId
+				String deployableId = null;
 				String deployableDirectory = manifest.getPaasApplication()
-						.getPaasApplicationVersion().getPaasApplicationDeployable().getLocation();
-				//Define the deployable element
-				Deployable dep = new Deployable();
+						.getPaasApplicationVersion()
+						.getPaasApplicationDeployable().getLocation();
+				// if the deployable is already in the DB we provide it's ID
+				DeployableType dep = new DeployableType();
+				if (!(deployableDirectory.contains("/") || deployableDirectory
+						.contains("\\"))) {
+					dep.setDeployableId(deployableDirectory);
+				}
+				// Define the deployable element
+				else {
+
+					dep.setDeployableDirectory(deployableDirectory);
+
+				}
 				dep.setDeployableName(deployableName);
 				dep.setDeployableType(deployableType);
-				dep.setDeployableDirectory(deployableDirectory);
 				app.setDeployable(dep);
-				
 				// retrieve ApplicationVersionInstance Names and number
-				List<PaasApplicationVersionInstanceType> listOfInstances = manifest.getPaasApplication()
-						.getPaasApplicationVersion().getPaasApplicationVersionInstance();
-				List<VersionInstance> listVI=new ArrayList<VersionInstance>();
-				int nbInstances=0;
-				
-				if(listOfInstances!=null && listOfInstances.size()>0)
-					for (PaasApplicationVersionInstanceType p:listOfInstances){
-						if(p!=null){
-							VersionInstance vi = new VersionInstance();
+				List<PaasApplicationVersionInstanceType> listOfInstances = manifest
+						.getPaasApplication().getPaasApplicationVersion()
+						.getPaasApplicationVersionInstance();
+				InstancesType listVI = new InstancesType();
+				int nbInstances = 0;
+
+				if (listOfInstances != null && listOfInstances.size() > 0)
+					for (PaasApplicationVersionInstanceType p : listOfInstances) {
+						if (p != null) {
+							InstanceType vi = new InstanceType();
 							vi.setInstanceName(p.getName());
-							listVI.add(vi);
+							listVI.getInstance().add(vi);
 							nbInstances++;
 						}
 					}
-				
+
 				// Update the Application object with the
 				// Adequate LinkList
-				LinksList linksList = new LinksList();
-				linksList = addDescribeAppLink(linksList, id.toString());
+				LinksListType linksList = new LinksListType();
+				linksList = ApplicationLinkGenerator.addDescribeAppLink(
+						linksList, id.toString(), apiUrl);
+				linksList = ApplicationLinkGenerator.addCreateAppLink(
+						linksList, apiUrl);
+				linksList = ApplicationLinkGenerator.addDestroyAppLink(
+						linksList, id.toString(), apiUrl);
+				linksList = ApplicationLinkGenerator.addFindAppsLink(linksList,
+						apiUrl);
+				linksList = ApplicationLinkGenerator.addUpdateAppLink(
+						linksList, id.toString(), apiUrl);
 				app.setLinksList(linksList);
-				
-				app.setVersionInstances(listVI);
+				app.setInstances(listVI);
 				app.setNbInstances(nbInstances);
-				app.setCheckExists(CHECK_EXISTS);
-				app.setStatus("STOPPED");	
-				
+				//app.setCheckExists(CHECK_EXISTS);
+				app.setStatus("CREATED");
+
 				ApplicationPool.INSTANCE.add(app);
 
 				return Response.status(Response.Status.OK)
-						.entity(new GenericEntity<Application>(app) {
+						.entity(new GenericEntity<ApplicationType>(app) {
 						}).type(MediaType.APPLICATION_XML_TYPE).build();
 			} else {
 				System.out
@@ -238,14 +273,14 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
-
 	@Override
 	public Response findApplications() {
 		try {
 			copyDeployedApps2Pool();
 			CloudFoundryClient client = null;
 			List<CloudApplication> appListCF = null;
-			List<Application> appListPool = ApplicationPool.INSTANCE.getAppList();
+			List<ApplicationType> appListPool = ApplicationPool.INSTANCE
+					.getAppList();
 			try {
 				client = new CloudFoundryClient(new CloudCredentials(
 						TEST_USER_EMAIL, TEST_USER_PASS), new URL(ccUrl));
@@ -263,27 +298,33 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 
 			if (appListCF != null && appListPool != null) {
 				for (CloudApplication cfApp : appListCF) {
-					Application poolApp = findAssociatedAppInThePool(cfApp
+					ApplicationType poolApp = findAssociatedAppInThePool(cfApp
 							.getName());
-					/// Update the status of the associated application in
+					// / Update the status of the associated application in
 					// the pool
 					if (poolApp != null) {
 						poolApp.setStatus(cfApp.getState().toString());
-						poolApp.setStaging(new StagingXML(cfApp.getStaging()));
-						poolApp.setServices(cfApp.getServices());
-						poolApp.setResources(new RessourcesXML(cfApp
-								.getResources()));
-						ApplicationPool.INSTANCE.updateApp(poolApp.getAppId(), poolApp);
+
+						ApplicationPool.INSTANCE.updateApp(poolApp.getAppId()
+								.toString(), poolApp);
 					}
 				}
 			}
-			if (appListPool != null && appListPool.size() > 0)
+			
+			
+			
+			if (appListPool != null && appListPool.size() > 0){
+				
+				List<SimpleApplicationType> appList = formatAppList(ApplicationPool.INSTANCE.getAppList());
+				ApplicationsType apps=new ApplicationsType();
+				apps.setApplication(appList);
+				
 				return Response
 						.status(Response.Status.OK)
-						.entity(new GenericEntity<List<Application>>(
-								ApplicationPool.INSTANCE.getAppList()) {
+						.entity(new GenericEntity<ApplicationsType>(
+								apps) {
 						}).type(MediaType.APPLICATION_XML_TYPE).build();
-			else {
+			}else {
 				or.setValue("No application available.");
 				return Response.status(Response.Status.OK).entity(or)
 						.type(MediaType.APPLICATION_XML_TYPE).build();
@@ -299,7 +340,6 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
-	
 	@Override
 	public Response startApplication(String appid) {
 		try {
@@ -318,15 +358,17 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				System.out.println("Failed to create Client");
 			} else {
 				client.login();
-				Application app = ApplicationPool.INSTANCE.getApp(appid);
+				ApplicationType app = ApplicationPool.INSTANCE.getApp(appid);
 				String appName = app.getAppName();
-				try{
-				if (client.getApplication(appName).getState() == AppState.STOPPED)
-					client.startApplication(appName);
-				}catch(HttpServerErrorException e){
-					// this error is to avoid timeout exceptions that occurs during the upload of large applications
-					//TODO add a method to see the status of the upload
-					System.out.println("(Start Application):Entering HttpServerErrorException....");
+				try {
+					if (client.getApplication(appName).getState() == AppState.STOPPED)
+						client.startApplication(appName);
+				} catch (HttpServerErrorException e) {
+					// this error is to avoid timeout exceptions that occurs
+					// during the upload of large applications
+					// TODO add a method to see the status of the upload
+					System.out
+							.println("(Start Application):Entering HttpServerErrorException....");
 				}
 				client.logout();
 			}
@@ -346,7 +388,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		try {
 			copyDeployedApps2Pool();
 			CloudFoundryClient client = null;
-			Application app = ApplicationPool.INSTANCE.getApp(appid);
+			ApplicationType app = ApplicationPool.INSTANCE.getApp(appid);
 			CloudApplication appCF = null;
 
 			try {
@@ -371,16 +413,14 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				// et les inserer dans
 				// lapoolApplication
 				app.setStatus(appCF.getState().toString());
-				app.setStaging(new StagingXML(appCF.getStaging()));
-				app.setServices(appCF.getServices());
-				app.setResources(new RessourcesXML(appCF.getResources()));
-				ApplicationPool.INSTANCE.updateApp(app.getAppId(), app);
+				ApplicationPool.INSTANCE.updateApp(app.getAppId().toString(),
+						app);
 				return Response.status(Response.Status.OK)
-						.entity(new GenericEntity<Application>(app) {
+						.entity(new GenericEntity<ApplicationType>(app) {
 						}).type(MediaType.APPLICATION_XML_TYPE).build();
 			} else if (appCF == null && app != null) {
 				return Response.status(Response.Status.OK)
-						.entity(new GenericEntity<Application>(app) {
+						.entity(new GenericEntity<ApplicationType>(app) {
 						}).type(MediaType.APPLICATION_XML_TYPE).build();
 			} else {
 				System.out.println("No Application with ID " + appid
@@ -406,7 +446,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		try {
 			copyDeployedApps2Pool();
 			CloudFoundryClient client = null;
-			Application app = null;
+			ApplicationType app = null;
 			try {
 				client = new CloudFoundryClient(new CloudCredentials(
 						TEST_USER_EMAIL, TEST_USER_PASS), new URL(ccUrl));
@@ -471,7 +511,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 			} else {
 				client.login();
 				client.deleteAllApplications();
-				//appPool.INSTANCE.removeAll();
+				// appPool.INSTANCE.removeAll();
 				ApplicationPool.INSTANCE.removeAll();
 				client.logout();
 			}
@@ -507,7 +547,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				System.out.println("Failed to create Client");
 			} else {
 				client.login();
-				Application app = ApplicationPool.INSTANCE.getApp(appid);
+				ApplicationType app = ApplicationPool.INSTANCE.getApp(appid);
 				String appName = app.getAppName();
 				if (client.getApplication(appName).getState() == AppState.STARTED)
 					client.stopApplication(appName);
@@ -523,11 +563,12 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
 		}
 	}
-	
+
 	@Override
 	public Response updateApplication(String appid,
 			String cloudApplicationDescriptor) {
-		throw new NotSupportedException("The update Application is not yet implemented.");
+		throw new NotSupportedException(
+				"The update Application is not yet implemented.");
 	}
 
 	@Override
@@ -547,7 +588,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				System.out.println("Failed to create Client");
 			} else {
 				client.login();
-				Application app = ApplicationPool.INSTANCE.getApp(appid);
+				ApplicationType app = ApplicationPool.INSTANCE.getApp(appid);
 				String appName = app.getAppName();
 				client.restartApplication(appName);
 				client.logout();
@@ -557,20 +598,26 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 			System.out.println("Failed to restart the application: "
 					+ e.getMessage());
 			e.printStackTrace();
-			error.setValue("Failed to restart the application: " + e.getMessage());
+			error.setValue("Failed to restart the application: "
+					+ e.getMessage());
 			return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
 					.entity(error).type(MediaType.APPLICATION_XML_TYPE).build();
 		}
 	}
 
 	@Override
-	public Response deployApplication(String appid, String envid,InputStream uploadedInputStream) {
+	public Response deployApplication(String appid, String envid,
+			InputStream uploadedInputStream) {
 		try {
-			Environment env = EnvironmentPool.INSTANCE.getEnv(envid);
-			Application app = ApplicationPool.INSTANCE.getApp(appid);
+			System.out.println("HERE envi et app id:" + envid + "  " + appid);
+			telecom.sudparis.eu.paas.core.server.xml.environment.EnvironmentType env = EnvironmentPool.INSTANCE
+					.getEnv(envid);
+			System.out.println("HERE env :" + env);
+			ApplicationType app = ApplicationPool.INSTANCE.getApp(appid);
 
 			CloudFoundryClient client = null;
-			List<String> servicesList = env.getServiceNames();
+			List<String> servicesList = getEnvironmentServiceList(env);
+			// List<String> servicesList = env.getServiceNames();
 
 			try {
 				client = new CloudFoundryClient(new CloudCredentials(
@@ -584,25 +631,52 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				System.out.println("Failed to create Client");
 			} else {
 				client.login();
-				
-				//We start by uploading the application files
-				String uploadedFileLocation = localTempPath + "/"+app.getDeployable().getDeployableName();
 
-				writeToFile(uploadedInputStream, uploadedFileLocation);
-				
-				//redefine the deployable element according to the uploaded file location
-				Deployable newDep=new Deployable();
+				// We start by uploading the application files
+
+				/**
+				 * TODO getDeployableId getRemoteAppStreamByID
+				 */
+
+				String artefactId = app.getDeployable().getDeployableId();
+				String uploadedFileLocation = localTempPath + "/"
+						+ app.getDeployable().getDeployableName();
+				AppObj appObj = null;
+				AppProcessing appProcessing = new AppProcessing(localTempPath
+						+ "/");
+				if (artefactId == null) {
+					FileUtilities.writeToFile(uploadedInputStream,
+							uploadedFileLocation);
+					InputStream is = new FileInputStream(new File(
+							uploadedFileLocation));
+
+					appObj = appProcessing.uploadAppToRemoteServer(is, app
+							.getDeployable().getDeployableName());
+					artefactId = appObj.getId();
+					System.out.println("ID ID:" + artefactId);
+				} else {
+					FileUtilities.writeToFile(
+							appProcessing.getRemoteAppStreamByID(artefactId),
+							uploadedFileLocation);
+				}
+
+				// redefine the deployable element according to the uploaded
+				// file location
+				DeployableType newDep = new DeployableType();
 				newDep.setDeployableDirectory(localTempPath);
-				newDep.setDeployableName(app.getDeployable().getDeployableName());
-				newDep.setDeployableType(app.getDeployable().getDeployableType());
-				
-				//update the application pool
-				ApplicationPool.INSTANCE.updateApp(appid, newDep);			
-				
-				String runtime = env.getStaging().map.get("runtime");
-				System.out.println("env.getStaging().get(runtime) = "
-						+ env.getStaging().map.get("runtime"));
-				String framework = env.getStaging().map.get("framework");
+				newDep.setDeployableName(app.getDeployable()
+						.getDeployableName());
+				newDep.setDeployableType(app.getDeployable()
+						.getDeployableType());
+				newDep.setDeployableId(artefactId);
+				// update the application pool
+				ApplicationPool.INSTANCE.updateApp(appid, newDep);
+
+				// String runtime = env.getStaging().map.get("runtime");
+				String runtime = getEnvironmentRuntime(env);
+
+				String framework = getEnvironmentFramework(env);
+
 				Staging staging = new Staging(runtime, framework);
 				List<CloudService> servicesLst = client.getServices();
 
@@ -619,12 +693,12 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 						}
 					}
 				}
-				//get the memory attribute from the environment
-				app.setMemory(env.getEnvMemory());
+				// get the memory attribute from the environment
+				//app.setMemory(env.getEnvMemory());
 				// create the application
 				client.createApplication(app.getAppName(), staging,
-						(int) app.getMemory(), app.getUris(),
-						env.getServiceNames(), app.isCheckExists());
+						(int) env.getEnvMemory(), app.getUris().getUri(),
+						servicesList, CHECK_EXISTS);
 
 				// Sets the number of instances
 				if (app.getNbInstances() > 0)
@@ -661,11 +735,11 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 						// the upload of large applications
 						// TODO add a method to see the status of the upload
 						System.out
-						.println("[DeployApplication]: Entering HttpServerErrorException....");
+								.println("[DeployApplication]: Entering HttpServerErrorException....");
 					}
 				} else if (app.getDeployable().getDeployableType()
 						.equals("folder")) {
-					//TODO
+					// TODO
 					String folderPath = app.getDeployable()
 							.getDeployableDirectory().replace("\\", "/");
 					File folderFile = new File(folderPath);
@@ -682,20 +756,26 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 						// upload of large applications
 						// TODO add a method to see the status of the upload
 						System.out
-						.println("[DeployApplication]: Entering HttpServerErrorException....");
+								.println("[DeployApplication]: Entering HttpServerErrorException....");
 					}
 				}
 				client.logout();
-				//delete the temp uploaded deployable
-				deletefile(uploadedFileLocation);
+				// delete the temp uploaded deployable
+				FileUtilities.deletefile(uploadedFileLocation);
 			}
 			// update the Application with describeApp and deleteApp links
-			LinksList linksList = ApplicationPool.INSTANCE.getApp(appid)
+			LinksListType linksList = ApplicationPool.INSTANCE.getApp(appid)
 					.getLinksList();
-			linksList = addDeleteAppLink(linksList, appid);
+			linksList = ApplicationLinkGenerator.addStartAppLink(linksList,
+					appid, apiUrl);
+			linksList = ApplicationLinkGenerator.addStopAppLink(linksList,
+					appid, apiUrl);
+			linksList = ApplicationLinkGenerator.addRestartAppLink(linksList,
+					appid, apiUrl);
+
 			ApplicationPool.INSTANCE.updateApp(appid, linksList);
-			
-			
+			// adds the envID to the deployed application
+			ApplicationPool.INSTANCE.updateApp(appid, envid);
 
 			return Response.status(Response.Status.OK).entity(app)
 					.type(MediaType.APPLICATION_XML_TYPE).build();
@@ -710,46 +790,62 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
-
 	@Override
 	public Response undeployApplication(String envid, String appid) {
 		throw new NotSupportedException();
 	}
 
-	
 	// private methods
+
+	private String getEnvironmentRuntime(
+			telecom.sudparis.eu.paas.core.server.xml.environment.EnvironmentType env) {
+		List<telecom.sudparis.eu.paas.core.server.xml.environment.EntryType> list = env
+				.getConfiguration().getEntry();
+
+		for (telecom.sudparis.eu.paas.core.server.xml.environment.EntryType entry : list) {
+			if (entry.getKey().toLowerCase().equals("runtime"))
+				return entry.getValue();
+		}
+		return null;
+	}
+
+	private String getEnvironmentFramework(
+			telecom.sudparis.eu.paas.core.server.xml.environment.EnvironmentType env) {
+		List<telecom.sudparis.eu.paas.core.server.xml.environment.EntryType> list = env
+				.getConfiguration().getEntry();
+
+		for (telecom.sudparis.eu.paas.core.server.xml.environment.EntryType entry : list) {
+			if (entry.getKey().toLowerCase().equals("framework"))
+				return entry.getValue();
+		}
+		return null;
+	}
+
+	private List<String> getEnvironmentServiceList(
+			telecom.sudparis.eu.paas.core.server.xml.environment.EnvironmentType env) {
+		List<telecom.sudparis.eu.paas.core.server.xml.environment.EntryType> list = env
+				.getConfiguration().getEntry();
+		List<String> serviceList = new ArrayList<String>();
+		System.out.println("HERE display list:" + list);
+		if (list != null)
+			for (telecom.sudparis.eu.paas.core.server.xml.environment.EntryType entry : list) {
+				System.out.println("HERE display entry:" + entry);
+				if (entry.getKey().toLowerCase().equals("service"))
+					serviceList.add(entry.getValue());
+				System.out.println("HERE display entry.getkey:"
+						+ entry.getKey());
+			}
+		return serviceList;
+	}
 
 	private synchronized Long getNextId() {
 		return new Long(ApplicationPool.INSTANCE.getNextID());
 	}
 
-
-	private LinksList addDescribeAppLink(
-			LinksList linksList, String appId) {
-		String url = formatApiURL(apiUrl)+"app/" + appId;
-		Link describeAppLink=new Link();
-		describeAppLink.setAction("GET");
-		describeAppLink.setLabel("describeApplication()");
-		describeAppLink.setHref(url);
-		linksList.getLink().add(describeAppLink);
-		return linksList;
-	}
-
-	private LinksList addDeleteAppLink(LinksList linksList,
-			String appId) {
-		String url = formatApiURL(apiUrl)+"app/" + appId
-				+ "/delete";
-		Link deleteAppLink=new Link();
-		deleteAppLink.setAction("DELETE");
-		deleteAppLink.setLabel("deleteApplication()");
-		deleteAppLink.setHref(url);
-		linksList.getLink().add(deleteAppLink);
-		return linksList;
-	}
-
-	private Application findAssociatedAppInThePool(String appName) {
-		List<Application> appListPool = ApplicationPool.INSTANCE.getAppList();
-		for (Application poolApp : appListPool) {
+	private ApplicationType findAssociatedAppInThePool(String appName) {
+		List<ApplicationType> appListPool = ApplicationPool.INSTANCE
+				.getAppList();
+		for (ApplicationType poolApp : appListPool) {
 			if (poolApp.getAppName().equals(appName))
 				return poolApp;
 		}
@@ -771,7 +867,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		if (appId.equals("{appId}"))
 			return "The application ID was not specified in the URL";
 		else {
-			Application app = ApplicationPool.INSTANCE.getApp(appId);
+			ApplicationType app = ApplicationPool.INSTANCE.getApp(appId);
 			if (app == null)
 				return "No application found with the specified ID :(" + appId
 						+ ")";
@@ -800,26 +896,69 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				client.logout();
 			}
 
-			//List<Application> appListPool = appPool.INSTANCE.getAppList();
+			// List<Application> appListPool = appPool.INSTANCE.getAppList();
 			for (CloudApplication ca : appListCF) {
 				String id = Long.toString(getNextId());
-				Application app = new Application();
-				app.setAppId(id);
+				ApplicationType app = new ApplicationType();
+				app.setAppId(Integer.parseInt(id));
 				app.setAppName(ca.getName());
-				app.setCheckExists(CHECK_EXISTS);
-				app.setMemory(ca.getMemory());
-				app.setResources(new RessourcesXML(ca.getResources()));
-				app.setServices(ca.getServices());
-				app.setStaging(new StagingXML(ca.getStaging()));
+				//app.setCheckExists(CHECK_EXISTS);
+				//app.setMemory(ca.getMemory());
+
+				// Since we can not recreate an environment, we recover only the
+				// configuration
+				// elements and the memory
+				EnvironmentType env = new EnvironmentType();
+				ConfigurationType conf = new ConfigurationType();
+
+				// get the runtime
+				EntryType runtime = new EntryType();
+				runtime.setKey("runtime");
+				runtime.setValue(ca.getStaging().getRuntime());
+				conf.getEntry().add(runtime);
+
+				// get the framework
+				EntryType framework = new EntryType();
+				framework.setKey("framework");
+				framework.setValue(ca.getStaging().getFramework());
+				conf.getEntry().add(framework);
+
+				// get the service Names
+				for (String service : ca.getServices()) {
+					EntryType e = new EntryType();
+					e.setKey("service");
+					e.setValue(service);
+					conf.getEntry().add(e);
+				}
+				env.setConfiguration(conf);
+				env.setEnvMemory(ca.getResources().get("memory"));
+				app.setEnvironment(env);
 				app.setStatus(ca.getState().toString());
-				app.setUris(ca.getUris());
+				UrisType uris = new UrisType();
+				uris.getUri().addAll(ca.getUris());
+				app.setUris(uris);
 				app.setNbInstances(ca.getInstances());
-				LinksList linksList = new LinksList();
-				linksList = addDescribeAppLink(linksList, id);
-				linksList = addDeleteAppLink(linksList, id);
+
+				LinksListType linksList = new LinksListType();
+				linksList = ApplicationLinkGenerator.addDescribeAppLink(
+						linksList, id, apiUrl);
+				linksList = ApplicationLinkGenerator.addDestroyAppLink(
+						linksList, id, apiUrl);
+				linksList = ApplicationLinkGenerator.addCreateAppLink(
+						linksList, apiUrl);
+				linksList = ApplicationLinkGenerator.addFindAppsLink(linksList,
+						apiUrl);
+				linksList = ApplicationLinkGenerator.addUpdateAppLink(
+						linksList, id, apiUrl);
+				linksList = ApplicationLinkGenerator.addStartAppLink(linksList,
+						id, apiUrl);
+				linksList = ApplicationLinkGenerator.addStopAppLink(linksList,
+						id, apiUrl);
+				linksList = ApplicationLinkGenerator.addRestartAppLink(
+						linksList, id, apiUrl);
+
 				app.setLinksList(linksList);
 				ApplicationPool.INSTANCE.add(app);
-				//appPool.INSTANCE.add(app);
 			}
 		}
 	}
@@ -832,7 +971,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 			return false;
 		}
 	}
-	
+
 	private void createMySqlService(String serviceName,
 			CloudFoundryClient client) {
 		CloudService service = new CloudService(CloudEntity.Meta.defaultMeta(),
@@ -861,77 +1000,17 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		client.createService(service);
 	}
 	
-	private String formatApiURL(String apiUrl){
-		apiUrl=apiUrl.trim();
-		if (!apiUrl.endsWith("/"))
-			apiUrl=apiUrl+"/";
-		return apiUrl;
-	}
-	
-	private void writeToFile(InputStream uploadedInputStream,
-			String uploadedFileLocation) {
-
-		try {
-			OutputStream out = new FileOutputStream(new File(
-					uploadedFileLocation));
-			int read = 0;
-			byte[] bytes = new byte[1024];
-
-			out = new FileOutputStream(new File(uploadedFileLocation));
-			while ((read = uploadedInputStream.read(bytes)) != -1) {
-				out.write(bytes, 0, read);
-			}
-			out.flush();
-			out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+	private List<SimpleApplicationType> formatAppList(List<ApplicationType> appList) {
+		List<SimpleApplicationType> listAppType=new ArrayList<SimpleApplicationType>();
+		for (ApplicationType a:appList){
+			SimpleApplicationType appType=new SimpleApplicationType();
+			appType.setId(a.getAppId());
+			appType.setDescription(a.getDescription());
+			appType.setName(a.getAppName());
+			appType.setUri(ApplicationLinkGenerator.formatApiURL(apiUrl) +"app/" + a.getAppId());
+			listAppType.add(appType);
 		}
+		return listAppType;
 	}
-	
-	/****************************************************/
-	private static boolean removeDirectory(File directory) {
-		if (directory == null)
-			return false;
-		if (!directory.exists())
-			return true;
-		if (!directory.isDirectory())
-			return false;
-
-		String[] list = directory.list();
-
-		if (list != null) {
-			for (int i = 0; i < list.length; i++) {
-				File entry = new File(directory, list[i]);
-				if (entry.isDirectory()) {
-					if (!removeDirectory(entry))
-						return false;
-				} else {
-					if (!entry.delete())
-						return false;
-				}
-			}
-		}
-
-		return directory.delete();
-	}
-	
-	private static boolean deletefile(String uploadedFileLocation) {
-		try{
-    		File file = new File(uploadedFileLocation);
-    		if(file.delete()){
-    			System.out.println(file.getName() + " is deleted!");
-    			return true;
-    		}else{
-    			System.out.println("Delete operation is failed.");
-    			return false;
-    		}
- 
-    	}catch(Exception e){
-    		e.printStackTrace();
-    		return false;
-    	}
-		
-	}
-
 
 }

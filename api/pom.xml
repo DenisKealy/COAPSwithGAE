@@ -25,7 +25,12 @@
 			<artifactId>jersey-client</artifactId>
 			<version>1.14</version>
 		</dependency>
-	</dependencies>
+		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.1.49</version>
+		</dependency>
+  	</dependencies>
 	<build>
 		<finalName>star-PaaS-API</finalName>
 		<plugins>

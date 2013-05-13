@@ -10,8 +10,8 @@
 	</paas_application>
 	<paas_environment name="JavaWebEnv" template="TomcatEnvTemp">			
 		<paas_environment_template name="TomcatEnvTemp" memory="65">
-			<description>TomcatServerEnvironmentTemplate</description>
-			<paas_environment_node content_type="container" name="tomcat" version="" provider="CF"/>			
+  		  <description>TomcatServerEnvironmentTemplate</description>
+		  <paas_environment_node content_type="container" name="tomcat" version="" provider="CF"/>
 		</paas_environment_template>
 	</paas_environment>
 </paas_application_manifest>

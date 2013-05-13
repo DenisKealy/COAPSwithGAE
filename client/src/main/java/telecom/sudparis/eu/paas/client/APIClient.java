@@ -17,6 +17,7 @@ package telecom.sudparis.eu.paas.client;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,6 +50,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
+import com.sun.jersey.multipart.BodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 
 /**
@@ -140,8 +142,12 @@ public class APIClient extends HttpServlet {
 					apiLocation = apiLocation.trim();
 				}
 			} else {
+				try {
 				fileName = item.getName();
 				file2upload = item;
+				}
+				catch (Exception e){
+				}
 			}
 		}
 
@@ -186,34 +192,52 @@ public class APIClient extends HttpServlet {
 						request.setAttribute("status", 404);
 						request.setAttribute(
 								"output",
-								"The deployableName was not found! Possible cause: Application is not yet cretaed.");
+								"The deployableName was not found! Possible cause: Application is not yet created.");
 						request.getRequestDispatcher("/index.jsp").forward(
 								request, response);
 					} else {
-						// temp destination path
-						fileName = localTempPath + '/' + fileName;
-						// write the inputStream to a FileOutputStream
-						File f = new File(fileName);
-						
+						File f = null;
+						if (!fileName.equals("") && !(fileName == null)) {
+
+							// temp destination path
+							fileName = localTempPath + '/' + fileName;
+							// write the inputStream to a FileOutputStream
+							f = new File(fileName);
+
 							OutputStream out = new FileOutputStream(f);
-						
-						int read = 0;
-						byte[] bytes = new byte[1024];
 
-						while ((read = uploadedStream.read(bytes)) != -1) {
-							out.write(bytes, 0, read);
+							int read = 0;
+							byte[] bytes = new byte[1024];
+
+							while ((read = uploadedStream.read(bytes)) != -1) {
+								out.write(bytes, 0, read);
+							}
+
+							uploadedStream.close();
+							out.flush();
+							out.close();
 						}
-
-						uploadedStream.close();
-						out.flush();
-						out.close();
-
-
-						FormDataMultiPart form = new FormDataMultiPart().field(
-								"file", f, MediaType.MULTIPART_FORM_DATA_TYPE);
+			
+						if (f==null){
+							 f=new File(localTempPath+"/temp");
+							 f.createNewFile(); 
+							FormDataMultiPart form = new FormDataMultiPart().field(
+									"file", f, MediaType.MULTIPART_FORM_DATA_TYPE);
+						//form.bodyPart(new BodyPart());
 						cr = service.path(path)
 								.type(MediaType.MULTIPART_FORM_DATA)
 								.post(ClientResponse.class, form);
+
+						}
+						else{
+							FormDataMultiPart form = new FormDataMultiPart().field(
+									"file", f, MediaType.MULTIPART_FORM_DATA_TYPE);
+						//form.bodyPart(new BodyPart());
+						cr = service.path(path)
+								.type(MediaType.MULTIPART_FORM_DATA)
+								.post(ClientResponse.class, form);
+						}
+
 					}
 				}// POST app is the creat app operation
 				else if (path.equals("app")) {
@@ -226,12 +250,11 @@ public class APIClient extends HttpServlet {
 				// other POST methods
 				else
 					cr = service.path(path).type(MediaType.APPLICATION_XML)
-					.entity(body).post(ClientResponse.class);
+							.entity(body).post(ClientResponse.class);
 			} else if (method.equals("DELETE")) {
 				cr = service.path(path).type(MediaType.APPLICATION_XML)
 						.delete(ClientResponse.class);
 			}
-			
 
 			request.setAttribute("status", cr.getStatus());
 
@@ -241,7 +264,7 @@ public class APIClient extends HttpServlet {
 						prettyFormat(cr.getEntity(String.class), 2));
 			else
 				request.setAttribute("output", cr.getEntity(String.class));
-			
+
 			request.getRequestDispatcher("/index.jsp").forward(request,
 					response);
 		}

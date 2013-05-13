@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  ******************************************************************************/
-package telecom.sudparis.eu.paas.core.server.environments.pool;
+package telecom.sudparis.eu.paas.core.server.pool.environment;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import telecom.sudparis.eu.paas.core.server.environments.pool.Environment.LinksList;
+import telecom.sudparis.eu.paas.core.server.xml.LinksListType;
+import telecom.sudparis.eu.paas.core.server.xml.environment.EnvironmentType;
 
 /**
  * @author sellami
@@ -28,31 +29,32 @@ import telecom.sudparis.eu.paas.core.server.environments.pool.Environment.LinksL
 public enum EnvironmentPool {
 	INSTANCE;
 
-	private List<Environment> envList = new ArrayList<Environment>();
-	private int NextID=1;
+	private List<EnvironmentType> envList = new ArrayList<EnvironmentType>();
+	private int NextID = 1;
 
-	public List<Environment> getEnvList() {
+	public List<EnvironmentType> getEnvList() {
 		return envList;
 	}
 
-	public void add(Environment env) {
+	public void add(EnvironmentType env) {
 		envList.add(env);
 		NextID++;
 	}
-	
+
 	/**
 	 * 
 	 * @param env
-	 * 		the environment to delete
+	 *            the environment to delete
 	 * @return 0 if the env was not found, 1 if the env was deleted
 	 */
 	public boolean delete(String envId) {
 		if (envList == null || envList.size() == 0) {
-			System.out.println("[EnvironmentPool]: the Environment list is empty!");
+			System.out
+					.println("[EnvironmentPool]: the Environment list is empty!");
 			return false;
 		} else {
-			for (Environment env : envList) {
-				if (env.getEnvId().equals(envId)){
+			for (EnvironmentType env : envList) {
+				if (env.getEnvId().toString().equals(envId)) {
 					envList.remove(env);
 					return true;
 				}
@@ -62,25 +64,26 @@ public enum EnvironmentPool {
 		return false;
 	}
 
-	public Environment getEnv(String envId) {
+	public EnvironmentType getEnv(String envId) {
 		if (envList == null || envList.size() == 0) {
-			System.out.println("[EnvironmentPool]: the Environment list is empty!");
+			System.out
+					.println("[EnvironmentPool]: the Environment list is empty!");
 			return null;
 		} else {
-			for (Environment env : envList) {
-				if (env.getEnvId().equals(envId))
+			for (EnvironmentType env : envList) {
+				if (env.getEnvId().toString().equals(envId))
 					return env;
 			}
 		}
 		// The specified env was not found
 		return null;
 	}
-	
-	public void updateEnv(String envId, LinksList linksList){
-		Environment env=getEnv(envId);
+
+	public void updateEnv(String envId, LinksListType linksList) {
+		EnvironmentType env = getEnv(envId);
 		envList.remove(env);
 		env.setLinksList(linksList);
-		envList.add(env);		
+		envList.add(env);
 	}
 
 	public int getNextID() {
@@ -91,4 +94,3 @@ public enum EnvironmentPool {
 		this.NextID = size;
 	}
 }
-
