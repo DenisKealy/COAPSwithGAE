@@ -2,14 +2,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-	    <groupId>star-PaaS</groupId>
-	    <artifactId>star-PaaS-Core</artifactId>
+	    <groupId>COAPS</groupId>
+	    <artifactId>COAPS-Core</artifactId>
 	    <version>0.0.1-SNAPSHOT</version>
 	</parent>
 	<groupId>CF-api-Web</groupId>
 	<artifactId>CF-api-Web</artifactId>
 	<packaging>war</packaging>
-	<name>Cloud Foundry REST API</name>
+	<name>Cloud Foundry COAPS API</name>
 	
 	<repositories>		
 		<repository>

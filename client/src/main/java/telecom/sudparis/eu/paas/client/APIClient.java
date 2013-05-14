@@ -17,7 +17,6 @@ package telecom.sudparis.eu.paas.client;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,17 +39,18 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
+
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileItemFactory;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import com.sun.jersey.api.client.config.ClientConfig;
 import com.sun.jersey.api.client.config.DefaultClientConfig;
-import com.sun.jersey.multipart.BodyPart;
 import com.sun.jersey.multipart.FormDataMultiPart;
 
 /**
@@ -143,10 +143,9 @@ public class APIClient extends HttpServlet {
 				}
 			} else {
 				try {
-				fileName = item.getName();
-				file2upload = item;
-				}
-				catch (Exception e){
+					fileName = item.getName();
+					file2upload = item;
+				} catch (Exception e) {
 				}
 			}
 		}
@@ -217,25 +216,26 @@ public class APIClient extends HttpServlet {
 							out.flush();
 							out.close();
 						}
-			
-						if (f==null){
-							 f=new File(localTempPath+"/temp");
-							 f.createNewFile(); 
-							FormDataMultiPart form = new FormDataMultiPart().field(
-									"file", f, MediaType.MULTIPART_FORM_DATA_TYPE);
-						//form.bodyPart(new BodyPart());
-						cr = service.path(path)
-								.type(MediaType.MULTIPART_FORM_DATA)
-								.post(ClientResponse.class, form);
 
-						}
-						else{
-							FormDataMultiPart form = new FormDataMultiPart().field(
-									"file", f, MediaType.MULTIPART_FORM_DATA_TYPE);
-						//form.bodyPart(new BodyPart());
-						cr = service.path(path)
-								.type(MediaType.MULTIPART_FORM_DATA)
-								.post(ClientResponse.class, form);
+						if (f == null) {
+							f = new File(localTempPath + "/temp");
+							f.createNewFile();
+							FormDataMultiPart form = new FormDataMultiPart()
+									.field("file", f,
+											MediaType.MULTIPART_FORM_DATA_TYPE);
+							// form.bodyPart(new BodyPart());
+							cr = service.path(path)
+									.type(MediaType.MULTIPART_FORM_DATA)
+									.post(ClientResponse.class, form);
+
+						} else {
+							FormDataMultiPart form = new FormDataMultiPart()
+									.field("file", f,
+											MediaType.MULTIPART_FORM_DATA_TYPE);
+							// form.bodyPart(new BodyPart());
+							cr = service.path(path)
+									.type(MediaType.MULTIPART_FORM_DATA)
+									.post(ClientResponse.class, form);
 						}
 
 					}

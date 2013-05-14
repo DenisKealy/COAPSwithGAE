@@ -1,13 +1,13 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-	<groupId>star-PaaS</groupId>
-	<artifactId>star-PaaS</artifactId>
+	<groupId>COAPS</groupId>
+	<artifactId>COAPS</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>star-PaaS-Core</artifactId>
+    <artifactId>COAPS-Core</artifactId>
     <packaging>pom</packaging>
-    <name>*-PaaS Core Parent POM</name>
+    <name>COAPS Core Parent POM</name>
     <modules>
 	<module>CloudFoundry-api</module>
 	<module>Openshift-api</module>

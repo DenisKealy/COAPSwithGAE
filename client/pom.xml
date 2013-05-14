@@ -2,13 +2,13 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-	<groupId>star-PaaS</groupId>
-	<artifactId>star-PaaS</artifactId>
+	<groupId>COAPS</groupId>
+	<artifactId>COAPS</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>star-PaaS-Client</artifactId>
+    <artifactId>COAPS-Client</artifactId>
     <packaging>war</packaging>
-    <name>*-PaaS Web Client</name>
+    <name>COAPS Web Client</name>
     <dependencies>
 	<dependency>
 	    <groupId>com.sun.jersey</groupId>

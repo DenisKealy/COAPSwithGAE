@@ -55,7 +55,6 @@ import telecom.sudparis.eu.paas.core.server.pool.application.ApplicationPool;
 import telecom.sudparis.eu.paas.core.server.pool.environment.EnvironmentPool;
 import telecom.sudparis.eu.paas.core.server.ressources.exception.NotSupportedException;
 import telecom.sudparis.eu.paas.core.server.ressources.util.ApplicationLinkGenerator;
-import telecom.sudparis.eu.paas.core.server.ressources.util.EnvironmentLinkGenerator;
 import telecom.sudparis.eu.paas.core.server.ressources.util.FileUtilities;
 import telecom.sudparis.eu.paas.core.server.xml.Error;
 import telecom.sudparis.eu.paas.core.server.xml.LinksListType;
@@ -70,8 +69,6 @@ import telecom.sudparis.eu.paas.core.server.xml.application.list.SimpleApplicati
 import telecom.sudparis.eu.paas.core.server.xml.environment.ConfigurationType;
 import telecom.sudparis.eu.paas.core.server.xml.environment.EntryType;
 import telecom.sudparis.eu.paas.core.server.xml.environment.EnvironmentType;
-import telecom.sudparis.eu.paas.core.server.xml.environment.list.EnvironmentsType;
-import telecom.sudparis.eu.paas.core.server.xml.environment.list.SimpleEnvironmentType;
 import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationManifestType;
 import telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationVersionInstanceType;
 
@@ -137,6 +134,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 	 */
 	private static String localTempPath = System.getProperty("java.io.tmpdir");
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response createApplication(String cloudApplicationDescriptor) {
 		try {
@@ -168,11 +168,12 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				String appName = manifest.getPaasApplication().getName();
 				app.setAppName(appName);
 
-				//retrieve app description
-				
-				String description=manifest.getPaasApplication().getDescription().toString();
+				// retrieve app description
+
+				String description = manifest.getPaasApplication()
+						.getDescription().toString();
 				app.setDescription(description);
-				
+
 				// retrieve uris
 				// List<String> uris = new ArrayList<String>();
 				// uris.add(appName + "." + HOST_NAME);
@@ -247,7 +248,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				app.setLinksList(linksList);
 				app.setInstances(listVI);
 				app.setNbInstances(nbInstances);
-				//app.setCheckExists(CHECK_EXISTS);
+				// app.setCheckExists(CHECK_EXISTS);
 				app.setStatus("CREATED");
 
 				ApplicationPool.INSTANCE.add(app);
@@ -273,6 +274,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response findApplications() {
 		try {
@@ -310,21 +314,18 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 					}
 				}
 			}
-			
-			
-			
-			if (appListPool != null && appListPool.size() > 0){
-				
-				List<SimpleApplicationType> appList = formatAppList(ApplicationPool.INSTANCE.getAppList());
-				ApplicationsType apps=new ApplicationsType();
+
+			if (appListPool != null && appListPool.size() > 0) {
+
+				List<SimpleApplicationType> appList = formatAppList(ApplicationPool.INSTANCE
+						.getAppList());
+				ApplicationsType apps = new ApplicationsType();
 				apps.setApplication(appList);
-				
-				return Response
-						.status(Response.Status.OK)
-						.entity(new GenericEntity<ApplicationsType>(
-								apps) {
+
+				return Response.status(Response.Status.OK)
+						.entity(new GenericEntity<ApplicationsType>(apps) {
 						}).type(MediaType.APPLICATION_XML_TYPE).build();
-			}else {
+			} else {
 				or.setValue("No application available.");
 				return Response.status(Response.Status.OK).entity(or)
 						.type(MediaType.APPLICATION_XML_TYPE).build();
@@ -340,6 +341,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response startApplication(String appid) {
 		try {
@@ -383,6 +387,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response describeApplication(String appid) {
 		try {
@@ -441,6 +448,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response deleteApplication(String appid) {
 		try {
@@ -492,6 +502,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response deleteApplications() {
 		try {
@@ -530,6 +543,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response stopApplication(String appid) {
 		try {
@@ -564,6 +580,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response updateApplication(String appid,
 			String cloudApplicationDescriptor) {
@@ -571,6 +590,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				"The update Application is not yet implemented.");
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response restartApplication(String appid) {
 		try {
@@ -605,6 +627,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response deployApplication(String appid, String envid,
 			InputStream uploadedInputStream) {
@@ -694,7 +719,7 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 					}
 				}
 				// get the memory attribute from the environment
-				//app.setMemory(env.getEnvMemory());
+				// app.setMemory(env.getEnvMemory());
 				// create the application
 				client.createApplication(app.getAppName(), staging,
 						(int) env.getEnvMemory(), app.getUris().getUri(),
@@ -790,6 +815,9 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response undeployApplication(String envid, String appid) {
 		throw new NotSupportedException();
@@ -902,8 +930,8 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 				ApplicationType app = new ApplicationType();
 				app.setAppId(Integer.parseInt(id));
 				app.setAppName(ca.getName());
-				//app.setCheckExists(CHECK_EXISTS);
-				//app.setMemory(ca.getMemory());
+				// app.setCheckExists(CHECK_EXISTS);
+				// app.setMemory(ca.getMemory());
 
 				// Since we can not recreate an environment, we recover only the
 				// configuration
@@ -999,15 +1027,17 @@ public class ApplicationManagerRessource implements RestApplicationManager {
 
 		client.createService(service);
 	}
-	
-	private List<SimpleApplicationType> formatAppList(List<ApplicationType> appList) {
-		List<SimpleApplicationType> listAppType=new ArrayList<SimpleApplicationType>();
-		for (ApplicationType a:appList){
-			SimpleApplicationType appType=new SimpleApplicationType();
+
+	private List<SimpleApplicationType> formatAppList(
+			List<ApplicationType> appList) {
+		List<SimpleApplicationType> listAppType = new ArrayList<SimpleApplicationType>();
+		for (ApplicationType a : appList) {
+			SimpleApplicationType appType = new SimpleApplicationType();
 			appType.setId(a.getAppId());
 			appType.setDescription(a.getDescription());
 			appType.setName(a.getAppName());
-			appType.setUri(ApplicationLinkGenerator.formatApiURL(apiUrl) +"app/" + a.getAppId());
+			appType.setUri(ApplicationLinkGenerator.formatApiURL(apiUrl)
+					+ "app/" + a.getAppId());
 			listAppType.add(appType);
 		}
 		return listAppType;

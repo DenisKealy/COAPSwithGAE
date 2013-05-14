@@ -1,6 +1,6 @@
 <html>
  <head>
-  <title> The *-PaaS API Web client</title>
+  <title> The COAPS Web client</title>
   <script type='text/javascript' src='http://code.jquery.com/jquery-1.7.1.js'></script>
 <!-- Code Mirror -->
 <link rel="stylesheet" href="ressources/codeMirror/lib/codemirror.css">
@@ -83,20 +83,20 @@ $(function() {
  <body bgcolor="#3E7087">
 
 <div style="text-align: center;"> </div>
- <div align="center"><h2><font color="white">*-PaaS API Web client</font></h2><h4> </h4> </div>
+ <div align="center"><h2><font color="white">COAPS  Web client</font></h2><h4> </h4> </div>
 <form method="post" action="/client/APIClient" style="height: 959px; " enctype="multipart/form-data">
  <div align="center">
 	<table border="0" bordercolor="white" bgcolor="#1F4661" width="60%" cellpadding="3" cellspacing="3" style="height: 948px; ">
 	
-	<tr><td><font color="white">*-PaaS  API location: </font></td><td>&nbsp;</td> <td>	
+	<tr><td><font color="white">COAPS API location: </font></td><td>&nbsp;</td> <td>	
 		<%
 	String apiLocation=(String)session.getAttribute("apiLocation");
 	if (apiLocation==null)
 		apiLocation="http://localhost:8080/CF-api/rest";
 	 %>
 	<input type=text name="apiLocation" id="apiLocation" size="70" style="width: 589px; " value="<%=apiLocation%>">
-	<br><font color="white"><small><i>the default location for the CF-PaaS api</i>:  http://localhost:8080/CF-api/rest</small></font>
-	<br><font color="white"><small><i>the default location for the OS-PaaS api</i>:  http://localhost:8080/OS-api/rest</small></font>
+	<br><font color="white"><small><i>the default location for the CF-COAPS api</i>  :  http://localhost:8080/CF-api/rest</small></font>
+	<br><font color="white"><small><i>the default location for the OS-COAPS api</i>:  http://localhost:8080/OS-api/rest</small></font>
 	</td></tr>
 	<tr>
 		<td><font color="white">Action: </font></td>

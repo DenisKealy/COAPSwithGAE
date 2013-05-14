@@ -91,6 +91,9 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	public static final String JAVA6 = "java";
 	public static final String JAVA7 = "java7";
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response createEnvironment(String environmentTemplateDescriptor) {
 		try {
@@ -278,6 +281,9 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response deleteEnvironment(String envid) {
 		try {
@@ -304,12 +310,16 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response findEnvironments() {
-		List<SimpleEnvironmentType> envList = formatEnvList(EnvironmentPool.INSTANCE.getEnvList());
-		EnvironmentsType envs=new EnvironmentsType();
+		List<SimpleEnvironmentType> envList = formatEnvList(EnvironmentPool.INSTANCE
+				.getEnvList());
+		EnvironmentsType envs = new EnvironmentsType();
 		envs.setEnvironment(envList);
-		
+
 		if (envList != null) {
 			return Response.status(Response.Status.OK)
 					.entity(new GenericEntity<EnvironmentsType>(envs) {
@@ -322,6 +332,9 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response getEnvironment(String envid) {
 		try {
@@ -348,6 +361,9 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response updateEnvironment(String envid,
 			String environmentTemplateDescriptor) {
@@ -355,12 +371,18 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 				"The updateEnvironment is not yet implemented.");
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response getDeployedApplications(String envid) {
 		throw new NotSupportedException(
 				"The getDeployedApplications is not yet implemented.");
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Response getInformations() {
 		throw new NotSupportedException(
@@ -371,17 +393,19 @@ public class EnvironmentManagerRessource implements RestEnvironmentManager {
 	private synchronized Long getNextId() {
 		return new Long(EnvironmentPool.INSTANCE.getNextID());
 	}
-	
-	private List<SimpleEnvironmentType> formatEnvList(List<EnvironmentType> envList) {
-		List<SimpleEnvironmentType> listEnvType=new ArrayList<SimpleEnvironmentType>();
-		for (EnvironmentType e:envList){
-			SimpleEnvironmentType envType=new SimpleEnvironmentType();
+
+	private List<SimpleEnvironmentType> formatEnvList(
+			List<EnvironmentType> envList) {
+		List<SimpleEnvironmentType> listEnvType = new ArrayList<SimpleEnvironmentType>();
+		for (EnvironmentType e : envList) {
+			SimpleEnvironmentType envType = new SimpleEnvironmentType();
 			envType.setDescription(e.getEnvDesc());
 			envType.setId(e.getEnvId());
 			envType.setName(e.getEnvName());
-			envType.setUri(EnvironmentLinkGenerator.formatApiURL(apiUrl) + "environment/" + e.getEnvId());
+			envType.setUri(EnvironmentLinkGenerator.formatApiURL(apiUrl)
+					+ "environment/" + e.getEnvId());
 			listEnvType.add(envType);
-			 
+
 		}
 		return listEnvType;
 	}
