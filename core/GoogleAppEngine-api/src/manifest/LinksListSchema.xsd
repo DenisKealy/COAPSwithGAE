@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="error" type="error"/>
+
+  <xs:element name="operationResponse" type="operationResponse"/>
+
+  <xs:complexType name="linkType">
+    <xs:sequence/>
+    <xs:attribute name="type" type="xs:string"/>
+    <xs:attribute name="label" type="xs:string"/>
+    <xs:attribute name="action" type="xs:string"/>
+    <xs:attribute name="description" type="xs:string"/>
+    <xs:attribute name="href" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="operationResponse">
+    <xs:sequence/>
+    <xs:attribute name="value" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="linksListType">
+    <xs:sequence>
+      <xs:element name="link" type="linkType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="error">
+    <xs:sequence/>
+    <xs:attribute name="value" type="xs:string"/>
+  </xs:complexType>
+</xs:schema>
+

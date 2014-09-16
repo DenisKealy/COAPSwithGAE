@@ -97,6 +97,8 @@ $(function() {
 	<input type=text name="apiLocation" id="apiLocation" size="70" style="width: 589px; " value="<%=apiLocation%>">
 	<br><font color="white"><small><i>the default location for the CF-COAPS api</i>  :  http://localhost:8080/CF-api/rest</small></font>
 	<br><font color="white"><small><i>the default location for the OS-COAPS api</i>:  http://localhost:8080/OS-api/rest</small></font>
+	<br><font color="white"><small><i>the default location for the GAE-COAPS api</i>:  http://localhost:8080/GAE-api/rest</small></font>
+
 	</td></tr>
 	<tr>
 		<td><font color="white">Action: </font></td>

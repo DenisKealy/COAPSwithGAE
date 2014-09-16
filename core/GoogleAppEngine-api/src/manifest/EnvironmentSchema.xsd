@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="environment" nillable="true" type="environmentType"/>
+
+  <xs:complexType name="entryType">
+    <xs:sequence/>
+    <xs:attribute name="key" type="xs:string"/>
+    <xs:attribute name="value" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="environmentType">
+    <xs:sequence>
+      <xs:element name="configuration" type="configurationType"/>
+      <xs:element name="linksList" type="linksListType"/>
+    </xs:sequence>
+    <xs:attribute name="envId" type="xs:int"/>
+    <xs:attribute name="envName" type="xs:string"/>
+    <xs:attribute name="envMemory" type="xs:int"/>
+    <xs:attribute name="envOperatingSystem" type="xs:string"/>
+    <xs:attribute name="envProgrammingLang" type="xs:string"/>
+    <xs:attribute name="envDesc" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="configurationType">
+    <xs:sequence>
+      <xs:element name="entry" type="entryType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="linksListType">
+    <xs:sequence>
+      <xs:element name="link" type="linkType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="linkType">
+    <xs:sequence/>
+    <xs:attribute name="type" type="xs:string"/>
+    <xs:attribute name="label" type="xs:string"/>
+    <xs:attribute name="action" type="xs:string"/>
+    <xs:attribute name="description" type="xs:string"/>
+    <xs:attribute name="href" type="xs:string"/>
+  </xs:complexType>
+</xs:schema>
+

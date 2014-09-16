@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class-diagram version="1.1.4" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
+  associations="true" dependencies="false" nesting-relationships="true">  
+  <class id="1" language="java" name="telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationManifestType" 
+    project="GAE-api-Web" 
+    file="/GAE-api-Web/src/main/java/telecom/sudparis/eu/paas/core/server/xml/manifest/PaasApplicationManifestType.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="491" y="-43"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="false" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="2" language="java" name="telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationType" 
+    project="GAE-api-Web" 
+    file="/GAE-api-Web/src/main/java/telecom/sudparis/eu/paas/core/server/xml/manifest/PaasApplicationType.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="388" y="92"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="false" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="3" language="java" name="telecom.sudparis.eu.paas.core.server.xml.manifest.PaasEnvironmentType" 
+    project="GAE-api-Web" 
+    file="/GAE-api-Web/src/main/java/telecom/sudparis/eu/paas/core/server/xml/manifest/PaasEnvironmentType.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="615" y="102"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="false" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="4" language="java" name="telecom.sudparis.eu.paas.core.server.xml.manifest.PaasEnvironmentTemplateType" 
+    project="GAE-api-Web" 
+    file="/GAE-api-Web/src/main/java/telecom/sudparis/eu/paas/core/server/xml/manifest/PaasEnvironmentTemplateType.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="717" y="243"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="false" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="5" language="java" name="telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationVersionType" 
+    project="GAE-api-Web" 
+    file="/GAE-api-Web/src/main/java/telecom/sudparis/eu/paas/core/server/xml/manifest/PaasApplicationVersionType.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="266" y="215"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="false" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="6" language="java" name="telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationDeployableType" 
+    project="GAE-api-Web" 
+    file="/GAE-api-Web/src/main/java/telecom/sudparis/eu/paas/core/server/xml/manifest/PaasApplicationDeployableType.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="445" y="371"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="false" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="7" language="java" 
+    name="telecom.sudparis.eu.paas.core.server.xml.manifest.PaasApplicationVersionInstanceType" project="GAE-api-Web" 
+    file="/GAE-api-Web/src/main/java/telecom/sudparis/eu/paas/core/server/xml/manifest/PaasApplicationVersionInstanceType.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="211" y="352"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="false" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <class id="8" language="java" name="telecom.sudparis.eu.paas.core.server.xml.manifest.PaasEnvironmentNodeType" 
+    project="GAE-api-Web" 
+    file="/GAE-api-Web/src/main/java/telecom/sudparis/eu/paas/core/server/xml/manifest/PaasEnvironmentNodeType.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="808" y="378"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="false" accessors="true" 
+      visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </class>  
+  <association id="9">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="10" name="paasApplication">        
+        <position height="18" width="87" x="1064" y="28"/>      
+      </attribute>      
+      <multiplicity id="11" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="2" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="12">    
+    <end type="SOURCE" refId="5" navigable="false">      
+      <attribute id="13" name="paasApplicationVersionInstance">        
+        <position height="18" width="165" x="1115" y="178"/>      
+      </attribute>      
+      <multiplicity id="14" minimum="0" maximum="2147483647"/>    
+    </end>    
+    <end type="TARGET" refId="7" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="15">    
+    <end type="SOURCE" refId="5" navigable="false">      
+      <attribute id="16" name="paasApplicationDeployable">        
+        <position height="18" width="140" x="953" y="135"/>      
+      </attribute>      
+      <multiplicity id="17" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="6" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="18">    
+    <end type="SOURCE" refId="1" navigable="false">      
+      <attribute id="19" name="paasEnvironment">        
+        <position height="18" width="93" x="1109" y="-52"/>      
+      </attribute>      
+      <multiplicity id="20" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="3" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="21">    
+    <end type="SOURCE" refId="3" navigable="false">      
+      <attribute id="22" name="paasEnvironmentTemplate">        
+        <position height="18" width="135" x="1044" y="14"/>      
+      </attribute>      
+      <multiplicity id="23" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="24">    
+    <end type="SOURCE" refId="4" navigable="false">      
+      <attribute id="25" name="paasEnvironmentNode">        
+        <position height="18" width="118" x="972" y="117"/>      
+      </attribute>      
+      <multiplicity id="26" minimum="0" maximum="2147483647"/>    
+    </end>    
+    <end type="TARGET" refId="8" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="27">    
+    <end type="SOURCE" refId="2" navigable="false">      
+      <attribute id="28" name="paasApplicationVersion">        
+        <position height="18" width="124" x="1063" y="68"/>      
+      </attribute>      
+      <multiplicity id="29" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="5" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <classifier-display autosize="true" stereotype="true" package="true" initial-value="false" signature="true" 
+    accessors="true" visibility="true">    
+    <attributes public="true" package="true" protected="true" private="true" static="true"/>    
+    <operations public="true" package="true" protected="true" private="true" static="true"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>

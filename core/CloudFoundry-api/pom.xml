@@ -35,6 +35,12 @@
 			<version>1.14</version>
 		</dependency>
 		<dependency>
+			<groupId>com.jcraft</groupId>
+			<artifactId>jsch</artifactId>
+			<version>0.1.49</version>
+		</dependency>
+	
+		<dependency>
 		  <groupId>star-PaaS</groupId>
   		  <artifactId>star-PaaS-API</artifactId>
   		  <version>0.0.1-SNAPSHOT</version>

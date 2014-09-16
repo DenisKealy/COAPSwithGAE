@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="application" nillable="true" type="applicationType"/>
+
+  <xs:element name="environment" type="environmentType"/>
+
+  <xs:complexType name="deployableType">
+    <xs:sequence/>
+    <xs:attribute name="deployableName" type="xs:string"/>
+    <xs:attribute name="deployableId" type="xs:string"/>
+    <xs:attribute name="deployableType" type="xs:string"/>
+    <xs:attribute name="deployableDirectory" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="applicationType">
+    <xs:sequence>
+      <xs:element name="description" type="xs:string" minOccurs="0"/>
+      <xs:element name="uris" type="urisType"/>
+      <xs:element name="deployable" type="deployableType"/>
+      <xs:element name="Instances" type="InstancesType"/>
+      <xs:element ref="environment"/>
+      <xs:element name="linksList" type="linksListType"/>
+    </xs:sequence>
+    <xs:attribute name="appName" type="xs:string"/>
+    <xs:attribute name="appId" type="xs:int"/>
+    <xs:attribute name="status" type="xs:string"/>
+    <xs:attribute name="nbInstances" type="xs:int"/>
+    <xs:attribute name="envId" type="xs:int"/>
+  </xs:complexType>
+
+  <xs:complexType name="urisType">
+    <xs:sequence>
+      <xs:element name="uri" type="xs:string" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="InstancesType">
+    <xs:sequence>
+      <xs:element name="Instance" type="InstanceType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="InstanceType">
+    <xs:sequence/>
+    <xs:attribute name="instanceName" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="environmentType">
+    <xs:sequence>
+      <xs:element name="configuration" type="configurationType"/>
+      <xs:element name="linksList" type="linksListType"/>
+    </xs:sequence>
+    <xs:attribute name="envId" type="xs:int"/>
+    <xs:attribute name="envName" type="xs:string"/>
+    <xs:attribute name="envMemory" type="xs:int"/>
+    <xs:attribute name="envDesc" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="configurationType">
+    <xs:sequence>
+      <xs:element name="entry" type="entryType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="entryType">
+    <xs:sequence/>
+    <xs:attribute name="key" type="xs:string"/>
+    <xs:attribute name="value" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="linksListType">
+    <xs:sequence>
+      <xs:element name="link" type="linkType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="linkType">
+    <xs:sequence/>
+    <xs:attribute name="type" type="xs:string"/>
+    <xs:attribute name="label" type="xs:string"/>
+    <xs:attribute name="action" type="xs:string"/>
+    <xs:attribute name="description" type="xs:string"/>
+    <xs:attribute name="href" type="xs:string"/>
+  </xs:complexType>
+</xs:schema>
+

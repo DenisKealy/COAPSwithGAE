@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF8"?>
+	<paas_application_manifest name="ServletSampleApplicationManifest">
+	<description>This manifest describes a Sample Servlet.</description>
+		<paas_application name="GAESampleApplication" environement="JavaWebEnv">
+			<description>Sample Servlet application description.</description>
+			<paas_application_version name="version1.0" label="1.0">
+				<paas_application_deployable name="BTBReporting_Client1" content_type="artifact" deployedAppID="gaeadapter" 
+				location="E:\GAETesting" multitenancy_level="SharedInstance"/>
+				<paas_application_version_instance name="Instance1" initial_state="1" default_instance="true"/>
+			</paas_application_version>
+		</paas_application>
+		<paas_environment name="JavaWebEnv" template="TomcatEnvTemp" operatingsystem="win" programminglang="java">			
+			<paas_environment_template name="TomcatEnvTemp">
+	  		  <description>TomcatServerEnvironmentTemplate</description>
+			  <paas_environment_node content_type="container" name="tomcat" version="" provider="GAE"/>
+			</paas_environment_template>
+		</paas_environment>
+	</paas_application_manifest>

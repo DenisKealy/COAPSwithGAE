@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="paas_application_manifest" nillable="true" type="paas_application_manifestType"/>
+
+  <xs:complexType name="paas_application_deployableType">
+    <xs:sequence/>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="content_type" type="xs:string"/>
+    <xs:attribute name="location" type="xs:string"/>
+    <xs:attribute name="multitenancy_level" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="paas_environment_configurationType">
+    <xs:sequence>
+      <xs:element name="paas_environment_variable" type="paas_environment_variableType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="paas_environment_variableType">
+    <xs:sequence/>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="value" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="paas_applicationType">
+    <xs:sequence>
+      <xs:element name="description" type="xs:string"/>
+      <xs:element name="paas_application_version" type="paas_application_versionType"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="environment" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="paas_application_versionType">
+    <xs:sequence>
+      <xs:element name="paas_application_deployable" type="paas_application_deployableType"/>
+      <xs:element name="paas_application_version_instance" type="paas_application_version_instanceType" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="label" type="xs:decimal"/>
+  </xs:complexType>
+
+  <xs:complexType name="paas_application_version_instanceType">
+    <xs:sequence/>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="initial_state" type="xs:int"/>
+    <xs:attribute name="default_instance" type="xs:boolean"/>
+  </xs:complexType>
+
+  <xs:complexType name="paas_environment_templateType">
+    <xs:sequence>
+      <xs:element name="description" type="xs:string"/>
+      <xs:element name="paas_environment_node" type="paas_environment_nodeType" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="memory" type="xs:int"/>
+  </xs:complexType>
+
+  <xs:complexType name="paas_environment_nodeType">
+    <xs:sequence/>
+    <xs:attribute name="content_type" type="xs:string"/>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="version" type="xs:string"/>
+    <xs:attribute name="provider" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="paas_application_manifestType">
+    <xs:sequence>
+      <xs:element name="description" type="xs:string"/>
+      <xs:element name="paas_application" type="paas_applicationType"/>
+      <xs:element name="paas_environment" type="paas_environmentType"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="paas_environmentType">
+    <xs:sequence>
+      <xs:element name="paas_environment_template" type="paas_environment_templateType"/>
+    </xs:sequence>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="template" type="xs:string"/>
+    <xs:attribute name="operatingsystem" type="xs:string"/>
+    <xs:attribute name="programminglang" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="paas_environment_relationType">
+    <xs:sequence>
+      <xs:element name="paas_environment_link" type="paas_environment_linkType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="paas_environment_linkType">
+    <xs:sequence/>
+    <xs:attribute name="name" type="xs:string"/>
+    <xs:attribute name="script" type="xs:string"/>
+  </xs:complexType>
+</xs:schema>
+

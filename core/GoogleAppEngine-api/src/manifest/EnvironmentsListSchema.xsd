@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+  <xs:element name="environments" nillable="true" type="environmentsType"/>
+
+  <xs:complexType name="simpleEnvironmentType">
+    <xs:sequence>
+      <xs:element name="id" type="xs:int"/>
+      <xs:element name="name" type="xs:string"/>
+      <xs:element name="description" type="xs:string"/>
+      <xs:element name="operatingSystem" type="xs:string"/>
+      <xs:element name="programmingLang" type="xs:string"/>
+      <xs:element name="uri" type="xs:string"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="environmentsType">
+    <xs:sequence>
+      <xs:element name="environment" type="simpleEnvironmentType" maxOccurs="unbounded"/>
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
+
