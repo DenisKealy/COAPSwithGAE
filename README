@@ -1,7 +1,8 @@
 ==============================================
 The *-PaaS API specification version 1.5
 ==============================================
-Authors: Mohamed Moahemd, Mohamed Sellami, Sami Yangui, Samir Tata
+Authors: Mohamed Moahemd, Mohamed Sellami, Sami Yangui, Samir Tata --> implement the COAPS API
+         Eman Hossny, Sherif Khattab, Fatma Omara, Hisham Hassan --> extended the COAPS API to include GAE platform.
 
 Contributor: Telecom SudParis
 
