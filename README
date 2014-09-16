@@ -27,7 +27,7 @@ Requirements: Maven Maven 3.0.4
 This action will package the different sub-modules:
 
 - api: the jar file of the *-PaaS API
-- core: two war files associated to the cloudFoundry and the Openshift implementations of API
+- core: three war files associated to the cloudFoundry, the Openshift, and Google App Engine implementations of API
 - client: a war file containing a Web client
 
 *****************
@@ -56,6 +56,7 @@ This folder contains two subfolders:
 
 - [CloudFoundry-api] : the CloudFoundry implementation of the *-PaaS API.
 - [OpenShift-api] : the OpenShift implementation of the *-PaaS API.
+- [Google App Engine-api] : the Google App Engine implementation of the *-PaaS API.
 
 After the maven build (section B), a Web application (i.e. war file) is generated in each sub-folder. These applications have to be deployed on a Web server and will acts a REST server which allows interacting with a CloudFoundry/an Open Shift PaaS instance.
  
@@ -104,6 +105,19 @@ To deploy an application on a running CloudFoundry instance, one should follow t
 - Create the application: select the "create application" action from the action list and provide the manifest fragment describing the application (application name, artifacts, instances number, environment name "envname", etc.). **IMPORTANT**: Here do not forget to specify the name and the path of the application to deploy.
 - Deploy the application: select the "deploy application" action from the action list while specifying the environment name "envname" and the application identifier "appid". An application "URL" and a "GitURL" will be returned by the API.
 - The application is accessible via a browser on the returned URL. To update the application, one should update its Git accessible on the returned "GitURL".
+
+5.1 Google App Engine test scenario
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To deploy an application on Google App Engine platform, one should follow these steps:
+
+- Access the client interface at http://localhost:8080/client/
+- Select the GoogleAppEngine PaaS solution.
+- Create an environment: select the "create environment" action from the action list and provide the manifest fragment describing the needed environment for the application to deploy (runtimes, frameworks, etc.). In the body of the request just paste the content of test-resources/CloudFoundry-test-manifests/EnvironmentManifest.xml (without the license comment). If additional nodes are needed, a database for example, the Environment manifest must be updated accordingly. To add a mysql database in the environment for example, add this element <paas_node content_type="database" name="mysql" version="2.2" provider="CF"/> after the existing <paas_node> element. After submitting this requested (i.e. the submit button), an XML description of the created environment is returned. From this descriptor, you have to ''save'' the returned "envid" that must be provided later to link this environment to the application to deploy (deployApplication action).
+- Create the application: select the "create application" action from the action list and provide the manifest describing the application. 
+ **IMPORTANT**: Here do not forget to modify the ApplicationVersionManifest to change the name of the application (if needed) and to specify the path of the application to deploy in the <paas_deployable> element.
+- Deploy the application (from the ApplicationManager Operations): select the "deploy application" action from the action list while specifying the environment identifier "envid" and the application identifier "appid" in the path.
+- Once the application is deployed, it is ready to be accessed via a browser on the returned URL.
 
 6. test-resources
 -----------------
